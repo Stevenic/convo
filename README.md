@@ -1,4 +1,4 @@
-# Convo: The Conversational Programming Language
+# Convo: a conversational programming language
 
 Convo is a high-level, conversational programming language designed to be interpreted by Generative AI models. It allows developers to write code in plain, natural language, making programming more accessible and intuitive. You can think of Convo as high-level pseudocode that describes the "gist" of a program, which a Large Language Model (LLM) can then translate into specific programming languages like Python, JavaScript, or any other language.
 
