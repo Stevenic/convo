@@ -1,0 +1,41 @@
+Sección: Configuración del Juego
+
+Crear una cuadrícula con 20 filas y 20 columnas.
+Crear una serpiente comenzando en el centro de la cuadrícula con una longitud de 3.
+Establecer la dirección inicial de la serpiente a "derecha".
+Colocar un alimento aleatoriamente en la cuadrícula.
+
+Sección: Bucle del Juego
+
+Mientras el juego esté en marcha,
+    Mostrar la cuadrícula con la serpiente y el alimento.
+    Preguntar al usuario por la dirección (arriba, abajo, izquierda, derecha).
+    Si la dirección es válida, entonces
+        Actualizar la dirección de la serpiente a la entrada del usuario.
+    Mover la serpiente en la dirección actual.
+    Si la serpiente come el alimento, entonces
+        Aumentar la longitud de la serpiente en 1.
+        Colocar un nuevo alimento aleatoriamente en la cuadrícula.
+    Si la serpiente choca consigo misma o con la pared, entonces
+        Terminar el juego y mostrar "¡Juego Terminado! Tu puntuación es [longitud de la serpiente]."
+
+Sección: Funciones
+
+Para mostrar la cuadrícula con la serpiente y el alimento,
+    Limpiar la pantalla.
+    Para cada celda en la cuadrícula,
+        Si la celda contiene una parte de la serpiente, entonces
+            Mostrar "S".
+        Si no, si la celda contiene alimento, entonces
+            Mostrar "F".
+        Si no,
+            Mostrar ".".
+
+Para mover la serpiente en la dirección actual,
+    Calcular la nueva posición de la cabeza basada en la dirección actual.
+    Añadir la nueva posición de la cabeza a la serpiente.
+    Eliminar la última parte de la serpiente a menos que haya comido alimento.
+
+Para colocar un alimento aleatoriamente en la cuadrícula,
+    Elegir una celda vacía aleatoria en la cuadrícula.
+    Colocar el alimento en esa celda.
