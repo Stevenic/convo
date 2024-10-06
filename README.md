@@ -8,7 +8,6 @@ The flow for creating a convo app is `english->convo->python`. Why is that bette
 
 1. [Key Features](#key-features)
 2. [Snake Game Example](#snake-game-example)
-   - [Explanation](#explanation)
 3. [Advantages of Convo](#advantages-of-convo)
 4. [Full Specification](#full-specification)
 5. [Creating Convo Programs](#creating-convo-programs)
