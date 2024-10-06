@@ -17,7 +17,7 @@ The flow for creating a convo app is `english->convo->python`. Why is that bette
 ## Key Features
 
 - **Natural Language Syntax**: Write code using everyday language, making it easy to read and understand.
-- **Multilingual Support**: Write Convo programs in any language, not just English, allowing for global accessibility.
+- **Multilingual Support**: Write Convo programs in any language, not just English, allowing for global accessibility. [snake in Spanish](examples/snake-es.convo)
 - **Implicit Variable Declaration**: Variables are created when first mentioned, reducing the need for explicit declarations.
 - **Flexible Control Structures**: Use natural phrases like "If", "While", "For each" to control the flow of the program.
 - **Functions and Procedures**: Define and call functions using plain language descriptions.
