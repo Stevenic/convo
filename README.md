@@ -2,6 +2,17 @@
 
 Convo is a high-level, conversational programming language designed to be interpreted by Generative AI models. It allows developers to write code in plain, natural language, making programming more accessible and intuitive. You can think of Convo as high-level pseudocode that describes the "gist" of a program, which a Large Language Model (LLM) can then translate into specific programming languages like Python, JavaScript, or any other language.
 
+## Table of Contents
+
+1. [Key Features](#key-features)
+2. [Snake Game Example](#snake-game-example)
+   - [Explanation](#explanation)
+3. [Advantages of Convo](#advantages-of-convo)
+4. [Full Specification](#full-specification)
+5. [Creating Convo Programs](#creating-convo-programs)
+   - [Generating Convo Programs](#generating-convo-programs)
+   - [Porting Convo Programs to other Languages](#porting-convo-programs-to-other-languages)
+
 ## Key Features
 
 - **Natural Language Syntax**: Write code using everyday language, making it easy to read and understand.
@@ -61,7 +72,7 @@ To place a food item randomly on the grid,
     Place the food item in that cell.
 ```
 
-**Explanation:**
+### Explanation
 
 1. **Game Setup:**
    - A grid is created to represent the game area, and a snake is initialized at the center with a length of 3.
@@ -88,6 +99,26 @@ To place a food item randomly on the grid,
 
 For a complete overview of Convo's syntax and features, refer to the [full Convo specification](convo-spec.md).
 
----
+## Creating Convo Programs
 
-By using Convo, you can focus on the logic and design of your programs in a natural and intuitive way. As AI technology progresses, the capabilities of LLMs to generate optimized and efficient code from Convo descriptions will only improve, making it a forward-looking choice for developers and learners alike.
+You can easily create new convo programs using a tool like [ChatGPT](https://chatgpt.com/) or [Claude](https://claude.ai/).
+
+### Generating Convo Programs
+
+Generating a convo program is as simple as creating a prompt that describes the program you want and then appending the text of the [convo spec](convo-spec.md) to your prompt:
+
+![create convo app](images/create-convo-app.png)
+
+![generated convo app](images/generated-convo-app.png)
+
+Once you've generated your base program definition you can tweak it and make changes either using generative AI or directly using natural language.
+
+### Porting Convo Programs to other Languages
+
+Convo programs can be easily ported to other languages like Python or JavaScript. Just create a prompt specifying the language to port the program to and then paste in the program.  The LLM will intuitively figure out the right code to generate using just the program definition so no spec is needed during this phase.  You can also express any style modifications or implementation details to use during this phase like specific libraries to use:
+
+![port convo app](images/port-convo-app.png)
+
+![ported convo app](images/ported-convo-app.png)
+
+Save the ported app to your environment of choice to run it.  More advanced programs will likely require some debugging and you can use generative AI tools like Canvas to help with this debugging.
