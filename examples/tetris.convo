@@ -1,0 +1,73 @@
+Section: Game Setup
+
+Define a game called "Tetris".
+
+Create a grid with 10 columns and 20 rows.
+Set each cell in the grid to be empty at the beginning.
+
+Define a list of shapes called "Tetrominoes" containing:
+    - I-shaped
+    - O-shaped
+    - T-shaped
+    - S-shaped
+    - Z-shaped
+    - J-shaped
+    - L-shaped
+
+Each shape is defined by a group of four connected blocks.
+
+Section: Game Logic
+
+To start the Tetris game:
+    Display "Welcome to Tetris! Press any key to begin."
+    While the game is not over, do the following:
+        - Generate a random tetromino from the list of Tetrominoes.
+        - Place the tetromino at the top of the grid, centered horizontally.
+        - Allow the player to move the tetromino left, right, or rotate it.
+        - Move the tetromino down by one row every second.
+        - If the tetromino reaches the bottom or collides with another block, lock it in place.
+        - Check for any complete rows. If a row is complete, remove it and move all rows above it down by one.
+        - Update the score based on the number of rows cleared.
+        - If new tetromino cannot be placed at the top of the grid, end the game.
+
+Section: Player Controls
+
+To move the tetromino:
+    If the player presses the left arrow key, move the tetromino one cell to the left.
+    If the player presses the right arrow key, move the tetromino one cell to the right.
+    If the player presses the up arrow key, rotate the tetromino.
+    If the player presses the down arrow key, move the tetromino down faster.
+    If the player presses the space bar key, move the tetromino to the bottom immediately. 
+
+Section: Scoring System
+
+Define the scoring system:
+    - Award 100 points for each complete row cleared.
+    - Award bonus points for clearing multiple rows at once:
+        - 300 points for 2 rows
+        - 500 points for 3 rows
+        - 800 points for 4 rows (a "Tetris")
+
+Section: Game Over
+
+To end the game:
+    Display "Game Over! Your final score is [score]."
+    Ask the player if they want to play again.
+    If the player chooses to play again, restart the game.
+    Otherwise, thank the player for playing and end the game.
+
+Section: Styles
+
+Define a style called "TetrominoBlock" with the following properties:
+    - Border color black
+    - Border width 1 pixel
+    - Background color varies by tetromino type:
+        - I-shaped: cyan
+        - O-shaped: yellow
+        - T-shaped: purple
+        - S-shaped: green
+        - Z-shaped: red
+        - J-shaped: blue
+        - L-shaped: orange
+
+Apply the "TetrominoBlock" style to each block in the tetromino shapes to ensure they are clearly composed of separate blocks.

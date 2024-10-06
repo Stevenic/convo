@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #gameBoard {
+            width: 200px;
+            height: 400px;
+            display: grid;
+            grid-template-columns: repeat(10, 20px);
+            grid-template-rows: repeat(20, 20px);
+            border: 2px solid black;
+            margin: auto;
+        }
+        .cell {
+            border: 1px solid #ddd;
+            width: 20px;
+            height: 20px;
+        }
+        .I {
+            background-color: cyan;
+        }
+        .O {
+            background-color: yellow;
+        }
+        .T {
+            background-color: purple;
+        }
+        .S {
+            background-color: green;
+        }
+        .Z {
+            background-color: red;
+        }
+        .J {
+            background-color: blue;
+        }
+        .L {
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Tetris!</h1>
+    <p>Press any key to start playing.</p>
+    <div id="gameBoard"></div>
+    <p id="score">Score: 0</p>
+    <p id="gameOverMessage" style="display: none;">Game Over! Press any key to restart.</p>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const gameBoard = document.getElementById("gameBoard");
+            const rows = 20;
+            const cols = 10;
+            let board = Array.from({ length: rows }, () => Array(cols).fill(""));
+            let score = 0;
+            let gameStarted = false;  // Game state flag to prevent multiple game loops
+
+            const tetrominoes = {
+                I: [[1, 1, 1, 1]],
+                O: [[1, 1], [1, 1]],
+                T: [[0, 1, 0], [1, 1, 1]],
+                S: [[0, 1, 1], [1, 1, 0]],
+                Z: [[1, 1, 0], [0, 1, 1]],
+                J: [[1, 0, 0], [1, 1, 1]],
+                L: [[0, 0, 1], [1, 1, 1]],
+            };
+
+            function createBoard() {
+                gameBoard.innerHTML = "";
+                board.forEach(row => {
+                    row.forEach(cell => {
+                        const div = document.createElement("div");
+                        div.className = "cell";
+                        if (cell) {
+                            div.classList.add(cell);
+                        }
+                        gameBoard.appendChild(div);
+                    });
+                });
+            }
+
+            function randomTetromino() {
+                const keys = Object.keys(tetrominoes);
+                const randKey = keys[Math.floor(Math.random() * keys.length)];
+                return { shape: tetrominoes[randKey], type: randKey };
+            }
+
+            function drawTetromino(tetromino, position) {
+                const { shape, type } = tetromino;
+                shape.forEach((row, rIdx) => {
+                    row.forEach((cell, cIdx) => {
+                        if (cell) {
+                            board[position.row + rIdx][position.col + cIdx] = type;
+                        }
+                    });
+                });
+                createBoard();
+            }
+
+            function clearTetromino(tetromino, position) {
+                const { shape } = tetromino;
+                shape.forEach((row, rIdx) => {
+                    row.forEach((cell, cIdx) => {
+                        if (cell) {
+                            board[position.row + rIdx][position.col + cIdx] = "";
+                        }
+                    });
+                });
+            }
+
+            function moveTetromino(tetromino, position, direction) {
+                clearTetromino(tetromino, position);
+                position.col += direction;
+                drawTetromino(tetromino, position);
+            }
+
+            function rotateTetromino(tetromino) {
+                const { shape } = tetromino;
+                const newShape = shape[0].map((_, index) => shape.map(row => row[index])).reverse();
+                tetromino.shape = newShape;
+            }
+
+            function checkCompletedRows() {
+                for (let row = 0; row < rows; row++) {
+                    if (board[row].every(cell => cell !== "")) {
+                        board.splice(row, 1);
+                        board.unshift(Array(cols).fill(""));
+                        score += 100;
+                        document.getElementById("score").innerText = `Score: ${score}`;
+                    }
+                }
+            }
+
+            function isGameOver() {
+                return board[0].some(cell => cell !== "");
+            }
+
+            function gameLoop() {
+                let tetromino = randomTetromino();
+                let position = { row: 0, col: Math.floor(cols / 2) - 1 };
+                drawTetromino(tetromino, position);
+
+                let dropInterval = setInterval(dropTetromino, 500);
+
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === "ArrowLeft" && position.col > 0) {
+                        moveTetromino(tetromino, position, -1);
+                    } else if (e.key === "ArrowRight" && position.col < cols - tetromino.shape[0].length) {
+                        moveTetromino(tetromino, position, 1);
+                    } else if (e.key === "ArrowUp") {
+                        clearTetromino(tetromino, position);
+                        rotateTetromino(tetromino);
+                        drawTetromino(tetromino, position);
+                    } else if (e.key === "ArrowDown") {
+                        clearTetromino(tetromino, position);
+                        position.row++;
+                        if (position.row + tetromino.shape.length <= rows && !collisionDetected(tetromino, position)) {
+                            drawTetromino(tetromino, position);
+                        } else {
+                            position.row--;
+                            drawTetromino(tetromino, position);
+                            checkCompletedRows();
+                            if (isGameOver()) {
+                                endGame();
+                                return;
+                            }
+                            tetromino = randomTetromino();
+                            position = { row: 0, col: Math.floor(cols / 2) - 1 };
+                            drawTetromino(tetromino, position);
+                        }
+                    } else if (e.key === " ") {
+                        clearTetromino(tetromino, position);
+                        while (position.row + tetromino.shape.length <= rows && !collisionDetected(tetromino, position)) {
+                            position.row++;
+                        }
+                        position.row--;
+                        drawTetromino(tetromino, position);
+                        checkCompletedRows();
+                        if (isGameOver()) {
+                            endGame();
+                            return;
+                        }
+                        tetromino = randomTetromino();
+                        position = { row: 0, col: Math.floor(cols / 2) - 1 };
+                        drawTetromino(tetromino, position);
+                    }
+                });
+
+                function dropTetromino() {
+                    clearTetromino(tetromino, position);
+                    position.row++;
+                    if (position.row + tetromino.shape.length > rows || collisionDetected(tetromino, position)) {
+                        position.row--;
+                        drawTetromino(tetromino, position);
+                        checkCompletedRows();
+                        if (isGameOver()) {
+                            endGame();
+                            clearInterval(dropInterval);
+                            return;
+                        }
+                        tetromino = randomTetromino();
+                        position = { row: 0, col: Math.floor(cols / 2) - 1 };
+                        drawTetromino(tetromino, position);
+                    } else {
+                        drawTetromino(tetromino, position);
+                    }
+                }
+
+                function collisionDetected(tetromino, position) {
+                    const { shape } = tetromino;
+                    for (let rIdx = 0; rIdx < shape.length; rIdx++) {
+                        for (let cIdx = 0; cIdx < shape[rIdx].length; cIdx++) {
+                            if (shape[rIdx][cIdx] && (position.row + rIdx >= rows || board[position.row + rIdx][position.col + cIdx])) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                function endGame() {
+                    document.getElementById("gameOverMessage").style.display = "block";
+                    document.addEventListener("keydown", () => {
+                        location.reload();
+                    }, { once: true });
+                }
+            }
+
+            document.addEventListener("keydown", () => {
+                if (!gameStarted) {
+                    gameStarted = true;
+                    gameLoop();
+                }
+            }, { once: true });
+
+            createBoard();
+        });
+    </script>
+</body>
+</html>

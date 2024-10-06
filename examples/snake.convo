@@ -1,0 +1,41 @@
+Section: Game Setup
+
+Create a grid with 20 rows and 20 columns.
+Create a snake starting at the center of the grid with a length of 3.
+Set the initial direction of the snake to "right".
+Place a food item randomly on the grid.
+
+Section: Game Loop
+
+While the game is running,
+    Display the grid with the snake and food.
+    Ask the user for the direction (up, down, left, right).
+    If the direction is valid, then
+        Update the snake's direction to the user's input.
+    Move the snake in the current direction.
+    If the snake eats the food, then
+        Increase the snake's length by 1.
+        Place a new food item randomly on the grid.
+    If the snake collides with itself or the wall, then
+        End the game and display "Game Over! Your score is [snake's length]."
+
+Section: Functions
+
+To display the grid with the snake and food,
+    Clear the screen.
+    For each cell in the grid,
+        If the cell contains a part of the snake, then
+            Display "S".
+        Else if the cell contains food, then
+            Display "F".
+        Else
+            Display ".".
+
+To move the snake in the current direction,
+    Calculate the new head position based on the current direction.
+    Add the new head position to the snake.
+    Remove the last part of the snake unless it has just eaten food.
+
+To place a food item randomly on the grid,
+    Choose a random empty cell on the grid.
+    Place the food item in that cell.
