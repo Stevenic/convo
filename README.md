@@ -2,6 +2,8 @@
 
 Convo is a high-level, conversational programming language designed to be interpreted by Generative AI models. It allows developers to write code in plain, natural language, making programming more accessible and intuitive. You can think of Convo as high-level pseudocode that describes the "gist" of a program, which a Large Language Model (LLM) can then translate into specific programming languages like Python, JavaScript, or any other language.
 
+The flow for creating a convo app is `english->convo->python`. Why is that better then the current flow of `english->python`? When you ask ChatGPT to "create a snake game using python" you can't predict what version of snake you're going to get back from GPT. It will be a version of snake but you don't know what features it's going to have, how it will be styled, etc.  When you ask ChatGPT to "create a snake game using convo" you're also going to get back a version of snake with an unpredictable set of features. But it's written at a much higher level and using natural language. You can easily tweak the convo version of the app to have teh features and styling you want. Once you get the convo program the way you want you can send that to the model to generate the python and it will be much cloaser to having all of the styling and features you want. 
+
 ## Table of Contents
 
 1. [Key Features](#key-features)
