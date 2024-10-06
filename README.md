@@ -1,2 +1,93 @@
-# convo
-Convo is conversational programming language that's intended to be interpreted by Generative AI.
+# Convo: The Conversational Programming Language
+
+Convo is a high-level, conversational programming language designed to be interpreted by Generative AI models. It allows developers to write code in plain, natural language, making programming more accessible and intuitive. You can think of Convo as high-level pseudocode that describes the "gist" of a program, which a Large Language Model (LLM) can then translate into specific programming languages like Python, JavaScript, or any other language.
+
+## Key Features
+
+- **Natural Language Syntax**: Write code using everyday language, making it easy to read and understand.
+- **Multilingual Support**: Write Convo programs in any language, not just English, allowing for global accessibility.
+- **Implicit Variable Declaration**: Variables are created when first mentioned, reducing the need for explicit declarations.
+- **Flexible Control Structures**: Use natural phrases like "If", "While", "For each" to control the flow of the program.
+- **Functions and Procedures**: Define and call functions using plain language descriptions.
+- **Object-Oriented Concepts**: Define classes and objects using descriptive language, enabling intuitive OOP features.
+- **Error Tolerance**: Minor grammatical errors are tolerated, with the interpreter inferring the intended meaning.
+- **Style and Resource Definitions**: Organize styles and resources in dedicated sections for better organization.
+
+## Snake Game Example
+
+Below is an example of how you might write a simple Snake game in Convo:
+
+```plaintext
+Section: Game Setup
+
+Create a grid with 20 rows and 20 columns.
+Create a snake starting at the center of the grid with a length of 3.
+Set the initial direction of the snake to "right".
+Place a food item randomly on the grid.
+
+Section: Game Loop
+
+While the game is running,
+    Display the grid with the snake and food.
+    Ask the user for the direction (up, down, left, right).
+    If the direction is valid, then
+        Update the snake's direction to the user's input.
+    Move the snake in the current direction.
+    If the snake eats the food, then
+        Increase the snake's length by 1.
+        Place a new food item randomly on the grid.
+    If the snake collides with itself or the wall, then
+        End the game and display "Game Over! Your score is [snake's length]."
+
+Section: Functions
+
+To display the grid with the snake and food,
+    Clear the screen.
+    For each cell in the grid,
+        If the cell contains a part of the snake, then
+            Display "S".
+        Else if the cell contains food, then
+            Display "F".
+        Else
+            Display ".".
+
+To move the snake in the current direction,
+    Calculate the new head position based on the current direction.
+    Add the new head position to the snake.
+    Remove the last part of the snake unless it has just eaten food.
+
+To place a food item randomly on the grid,
+    Choose a random empty cell on the grid.
+    Place the food item in that cell.
+```
+
+**Explanation:**
+
+1. **Game Setup:**
+   - A grid is created to represent the game area, and a snake is initialized at the center with a length of 3.
+   - The initial direction of the snake is set to "right", and a food item is placed randomly on the grid.
+
+2. **Game Loop:**
+   - The game runs in a loop, continuously displaying the grid and asking the user for input to change the snake's direction.
+   - The snake moves in the current direction, and if it eats the food, its length increases, and a new food item is placed.
+   - The game ends if the snake collides with itself or the wall, displaying a "Game Over" message with the score.
+
+3. **Functions:**
+   - `Display the grid with the snake and food`: This function clears the screen and displays the current state of the grid, showing the snake and food.
+   - `Move the snake in the current direction`: This function updates the snake's position based on its current direction and handles the growth of the snake when it eats food.
+   - `Place a food item randomly on the grid`: This function selects a random empty cell to place a new food item.
+
+## Advantages of Convo
+
+- **Write Once, Run Anywhere**: Write Convo programs in any natural language, and LLMs can interpret and generate code in various programming languages.
+- **Future-Proof Code**: As LLMs improve over time, you can regenerate the underlying implementation code from your Convo programs without changing the original code.
+- **Accessibility**: Lowers the barrier to programming by allowing people to use language they are comfortable with.
+- **Leverage AI Improvements**: Benefit from advancements in AI to produce more efficient and sophisticated code over time.
+
+## Full Specification
+
+For a complete overview of Convo's syntax and features, refer to the [full Convo specification](convo-spec.md).
+
+---
+
+By using Convo, you can focus on the logic and design of your programs in a natural and intuitive way. As AI technology progresses, the capabilities of LLMs to generate optimized and efficient code from Convo descriptions will only improve, making it a forward-looking choice for developers and learners alike.
