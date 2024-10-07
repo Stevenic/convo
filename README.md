@@ -22,7 +22,7 @@ The flow for creating a convo app is `english->convo->python`. Why is that bette
 - **Flexible Control Structures**: Use natural phrases like "If", "While", "For each" to control the flow of the program.
 - **Functions and Procedures**: Define and call functions using plain language descriptions.
 - **Object-Oriented Concepts**: Define classes and objects using descriptive language, enabling intuitive OOP features.
-- **Error Tolerance**: Minor grammatical errors are tolerated, with the interpreter inferring the intended meaning.
+- **Error Tolerance**: Minor grammatical errors are tolerated, with the LLM inferring the intended meaning.
 - **Style and Resource Definitions**: Organize styles and resources in dedicated sections for better organization.
 
 ## Snake Game Example
