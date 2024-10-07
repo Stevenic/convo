@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tron-Themed CSV Bar Chart</title>
+    <!-- Include Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include PapaParse CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            background-color: #000;
+            color: #0ff;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #chartContainer {
+            width: 80%;
+            max-width: 800px;
+            height: 500px; /* Increased height for better label visibility */
+            margin: auto;
+        }
+        #title {
+            font-size: 2em;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 30px #0ff, 0 0 40px #0ff;
+            margin-bottom: 20px;
+        }
+        #errorMessage {
+            color: #ff0040;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        input[type="file"] {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #222;
+            border: 2px solid #0ff;
+            color: #0ff;
+            cursor: pointer;
+        }
+        input[type="file"]:hover {
+            background-color: #0ff;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Data Visualization</div>
+    <input type="file" id="csvFileInput" accept=".csv" />
+    <div id="errorMessage"></div>
+    <div id="chartContainer">
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <script>
+        document.getElementById('csvFileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = '';
+            if (file) {
+                Papa.parse(file, {
+                    header: false,
+                    dynamicTyping: true,
+                    complete: function(results) {
+                        try {
+                            const data = results.data;
+                            // Remove any empty rows
+                            const filteredData = data.filter(row => row.length >= 2 && row[0] !== "" && row[1] !== "");
+                            if (filteredData.length === 0) {
+                                throw new Error("No valid data found.");
+                            }
+                            const labels = filteredData.map(row => row[0]);
+                            const values = filteredData.map(row => row[1]);
+
+                            createBarChart(labels, values);
+                        } catch (error) {
+                            console.error(error);
+                            errorMessage.textContent = "There was an issue reading the file. Please upload a valid CSV file.";
+                        }
+                    },
+                    error: function(err) {
+                        console.error(err);
+                        errorMessage.textContent = "There was an issue reading the file. Please upload a valid CSV file.";
+                    }
+                });
+            }
+        });
+
+        function createBarChart(labels, values) {
+            const ctx = document.getElementById('barChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (window.barChartInstance) {
+                window.barChartInstance.destroy();
+            }
+
+            try {
+                window.barChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Values',
+                            data: values,
+                            backgroundColor: values.map((value, index) => index % 2 === 0 ? 'rgba(0, 255, 255, 0.8)' : 'rgba(0, 255, 255, 0.6)'),
+                            borderColor: 'rgba(0, 255, 255, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0, 255, 255, 0.8)',
+                                titleColor: '#000',
+                                bodyColor: '#000',
+                                borderColor: '#0ff',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(0, 255, 255, 0.1)',
+                                    borderColor: 'rgba(0, 255, 255, 1)',
+                                    drawBorder: true,
+                                    drawOnChartArea: true,
+                                    drawTicks: true
+                                },
+                                ticks: {
+                                    color: '#0ff',
+                                    font: {
+                                        size: 12,
+                                        weight: 'bold' // Make labels bolder for better visibility
+                                    },
+                                    // Removed the callback to ensure labels are displayed correctly
+                                    // callback: function(value) {
+                                    //     return '\u200B' + value; // Zero-width space for better rendering
+                                    // }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(0, 255, 255, 0.1)',
+                                    borderColor: 'rgba(0, 255, 255, 1)',
+                                    drawBorder: true,
+                                    drawOnChartArea: true,
+                                    drawTicks: true
+                                },
+                                ticks: {
+                                    color: '#0ff',
+                                    font: {
+                                        size: 12
+                                    },
+                                    beginAtZero: true
+                                    // Removed the callback here as well
+                                    // callback: function(value) {
+                                    //     return '\u200B' + value; // Zero-width space for better rendering
+                                    // }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+
+                // Apply glowing effects to chart elements
+                applyGlowingEffects(ctx);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('errorMessage').textContent = "Unable to create the bar chart. Please check the data format.";
+            }
+        }
+
+        function applyGlowingEffects(ctx) {
+            // This function can be used to add additional glowing effects if needed.
+            // Currently, Chart.js handles most of the styling.
+            // For more advanced effects, consider using custom plugins or Canvas drawing.
+        }
+    </script>
+</body>
+</html>

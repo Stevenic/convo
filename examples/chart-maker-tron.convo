@@ -1,0 +1,19 @@
+Ask the user to upload a CSV file.
+
+Attempt to read the uploaded file as a table. If that fails, display "There was an issue reading the file. Please upload a valid CSV file."
+
+Extract the first two columns of the table, assuming they contain labels and values.
+
+Create a bar chart using the labels from the first column and values from the second column. Style the chart with a "Tron" vibe:
+
+- Set the background color to black.
+
+- Use neon blue and cyan colors for the bars.
+
+- Set the axis lines and labels to glow in neon blue.
+
+- Use a grid with faint neon blue lines for a futuristic look.
+
+Display the bar chart to the user with the title "Data Visualization" styled in a glowing neon blue font.
+
+If there are any errors in creating the chart, display "Unable to create the bar chart. Please check the data format."

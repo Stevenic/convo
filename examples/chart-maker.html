@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Bar Chart Visualizer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Upload a CSV File</h1>
+    <input type="file" id="fileInput" accept=".csv">
+    <div>
+        <canvas id="barChart" width="400" height="200"></canvas>
+    </div>
+    <p id="errorMessage" style="color: red;"></p>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const csvContent = e.target.result;
+                        const rows = csvContent.split('\n').map(row => row.split(','));
+
+                        if (rows.length < 2) {
+                            throw new Error('Invalid CSV format');
+                        }
+
+                        const labels = [];
+                        const values = [];
+
+                        for (let i = 1; i < rows.length; i++) {
+                            if (rows[i].length >= 2) {
+                                labels.push(rows[i][0].trim());
+                                values.push(parseFloat(rows[i][1].trim()));
+                            }
+                        }
+
+                        if (labels.length === 0 || values.length === 0) {
+                            throw new Error('No valid data found');
+                        }
+
+                        drawChart(labels, values);
+                        document.getElementById('errorMessage').textContent = '';
+                    } catch (error) {
+                        document.getElementById('errorMessage').textContent = 'There was an issue reading the file. Please upload a valid CSV file.';
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function drawChart(labels, values) {
+            try {
+                const ctx = document.getElementById('barChart').getContext('2d');
+                if (window.barChartInstance) {
+                    window.barChartInstance.destroy();
+                }
+                window.barChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Data Visualization',
+                            data: values,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                document.getElementById('errorMessage').textContent = '';
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = 'Unable to create the bar chart. Please check the data format.';
+            }
+        }
+    </script>
+</body>
+</html>
