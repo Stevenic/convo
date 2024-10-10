@@ -4,6 +4,10 @@ Convo is a high-level, conversational programming language designed to be genera
 
 The flow for creating a convo app is `english->convo->python`. Why is that better then the current flow of `english->python`? When you ask ChatGPT to "create a snake game using python" you can't predict what version of snake you're going to get back from the model. It will be a version of snake but you don't know what features it's going to have, how it will be styled, etc.  When you ask ChatGPT to "create a snake game using convo" you're also going to get back a version of snake with an unpredictable set of features, but it's written at a much higher level and using natural language. You can easily tweak the convo version of the app to have the features and styling you want and then once you get the convo program the way you want you can send it to the model to generate a python version of the game. The returned output will be much cloaser to having all of the styling and features you specified in your convo program. 
 
+> [!NOTE]  
+> It's important to note that there is no special program or application needed to use Convo. It's just a prompting technique. 
+> In fact there's a [Convo GPT](https://chatgpt.com/g/g-AL8dpM0dQ-convo) that will guide you through the entire process of creating a convo program and then porting that to a target language.
+
 ## Table of Contents
 
 1. [Key Features](#key-features)
@@ -102,7 +106,7 @@ For a complete overview of Convo's syntax and features, refer to the [full Convo
 
 ## Creating Convo Programs
 
-You can easily create new convo programs using a tool like [ChatGPT](https://chatgpt.com/) or [Claude](https://claude.ai/).
+You can easily create new convo programs using a tool like [ChatGPT](https://chatgpt.com/) or [Claude](https://claude.ai/). There's also a [Convo GPT](https://chatgpt.com/g/g-AL8dpM0dQ-convo) that will guide you through creating a convo program and then porting that to a target language.
 
 ### Generating Convo Programs
 
