@@ -17,6 +17,7 @@ The flow for creating a convo app is `english->convo->python`. Why is that bette
 5. [Creating Convo Programs](#creating-convo-programs)
    - [Generating Convo Programs](#generating-convo-programs)
    - [Porting Convo Programs to other Languages](#porting-convo-programs-to-other-languages)
+6. [Origins and Why Convo Works](#origins-and-why-convo-works)
 
 ## Key Features
 
@@ -127,4 +128,15 @@ Convo programs can be easily ported to other languages like Python or JavaScript
 ![ported convo app](images/ported-convo-app.png)
 
 Save the ported app to your environment of choice to run it.  More advanced programs will likely require some debugging and you can use generative AI tools like Canvas to help with this debugging.
+
+## Origins and Why Convo Works
+
+Convo was designed by `o1-preview` with a bit of prompting by me. I wanted to know; If the model could design any programming language it wanted to, what would it design? I started by asking the model to list every programming language it could think of and enumerate each languages pro's & cons. I then asked it to select it's favorite language and it chose Python. I'm a TypeScript guy so whatever... I then gave it the prompt "In the future every person on the planet will be a programmer. Thinking about a more conversationally friendly language. What would it's key features be?" The model identified 20 key features of such a language and placed a heavy emphisis on inclusivity and collaboration. I then asked for the basic syntax rules of this new language and that resulted in the first draft of the Convo spec. So why does Convo work?
+
+The Convo spec is interesting and it's an important component but it's really just a plot device. It puts the model in the desired frame of mind to generate [pseudocode](https://en.wikipedia.org/wiki/Pseudocode) when prompted to create a program. Pseudocode, is classically how developers exchange ideas when talking about algorithms and code. Pseudocode is nice because it's language agnostic and naturally fuzzy. Two developers that don't share a programming language in common can still exchange ideas via pseudocode. These models are more about chaining concepts together then they are about chaining specific words or tokens. The concept of a variable is the same for the model regardless of whether it's a variable definied in a specific programming language or a variable defined in pseudocode. The same is true for every other programming construct which is what makes pseudocode an ideal abstraction for describing program definitions to a machine that's, debatably, capable of reasoning like a human.
+
+Pseudocode naturally abstracts away low level implementation details and focuses more on high level logic flows. This results in a reduction of complexity that makes it easier for the model to generate valid pseudocode then valid python or javascript. Arguably, all pseudocode is valid whcih means that every Convo program the model generates is likely to be 100% correct. So the first step of going from `english->convo` always results in a valid program. The second step of going from `convo->python` can result in errors but the chance of generating errors should be reduced. That's because the complexity of the generation task has been reduced.  This reduction of complexity stems from the fact that most of the highlevel program decisions will have been made in the convo program. That frees the model up to simply focus on the low-level implementation details versus having to also make high-level decisions.  The more focused these models are the generally more reliable they are.
+
+The other thing that's maybe not so obvious is that Pseudocode tends to be a more action forward description language. The instruction heavy Pseudocode leans into the instruction tuning these models have undergone. All of these forces combine to yield observably more consitent and generally better program generation.
+
 
