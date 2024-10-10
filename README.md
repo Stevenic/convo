@@ -4,12 +4,16 @@ Convo is a high-level, conversational programming language designed to be genera
 
 The flow for creating a convo app is `english->convo->python`. Why is that better then the current flow of `english->python`? When you ask ChatGPT to "create a snake game using python" you can't predict what version of snake you're going to get back from the model. It will be a version of snake but you don't know what features it's going to have, how it will be styled, etc.  When you ask ChatGPT to "create a snake game using convo" you're also going to get back a version of snake with an unpredictable set of features, but it's written at a much higher level and using natural language. You can easily tweak the convo version of the app to have the features and styling you want and then once you get the convo program the way you want you can send it to the model to generate a python version of the game. The returned output will be much cloaser to having all of the styling and features you specified in your convo program. 
 
+> [!NOTE]  
+> It's important to note that there is no special program or application needed to use Convo. It's just a prompting technique. 
+> In fact there's a [Convo GPT](https://chatgpt.com/g/g-AL8dpM0dQ-convo) that will guide you through the entire process of creating a convo program and then porting that to a target language.
+
 ## Table of Contents
 
 1. [Key Features](#key-features)
 2. [Snake Game Example](#snake-game-example)
 3. [Advantages of Convo](#advantages-of-convo)
-4. [Full Specification](#full-specification)
+4. [Full Specification and Examples](#full-specification-and-examples)
 5. [Creating Convo Programs](#creating-convo-programs)
    - [Generating Convo Programs](#generating-convo-programs)
    - [Porting Convo Programs to other Languages](#porting-convo-programs-to-other-languages)
@@ -96,13 +100,13 @@ To place a food item randomly on the grid,
 - **Accessibility**: Lowers the barrier to programming by allowing people to use language they are comfortable with.
 - **Leverage AI Improvements**: Benefit from advancements in AI to produce more efficient and sophisticated code over time.
 
-## Full Specification
+## Full Specification and Examples
 
-For a complete overview of Convo's syntax and features, refer to the [full Convo specification](convo-spec.md).
+For a complete overview of Convo's syntax and features, refer to the [full Convo specification](convo-spec.md). If you'd like to create your own custom GPT you can view the source for the default [Convo GPT Instructions](gpt-instructions.md). 
 
 ## Creating Convo Programs
 
-You can easily create new convo programs using a tool like [ChatGPT](https://chatgpt.com/) or [Claude](https://claude.ai/).
+You can easily create new convo programs using a tool like [ChatGPT](https://chatgpt.com/) or [Claude](https://claude.ai/). The [Examples](https://github.com/Stevenic/convo/tree/main/examples) folder contains a small set of example .convo files and the .html & .py files they ported to.  There's also a [Convo GPT](https://chatgpt.com/g/g-AL8dpM0dQ-convo) that will guide you through creating a convo program and then porting that to a target language.
 
 ### Generating Convo Programs
 
@@ -123,3 +127,4 @@ Convo programs can be easily ported to other languages like Python or JavaScript
 ![ported convo app](images/ported-convo-app.png)
 
 Save the ported app to your environment of choice to run it.  More advanced programs will likely require some debugging and you can use generative AI tools like Canvas to help with this debugging.
+
