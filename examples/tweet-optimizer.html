@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tweet Optimizer</title>
+    <style>
+        /* Reset and basic styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f8fa;
+            color: #14171a;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="password"],
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 40px 10px 10px;
+            border: 1px solid #ccd6dd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Show/Hide password toggle */
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 35px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 14px;
+            color: #1da1f2;
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            color: #1da1f2;
+            margin-left: 5px;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #14171a;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above */
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Collapsible section */
+        .collapsible {
+            background-color: #f5f8fa;
+            color: #14171a;
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .collapsible:after {
+            content: '\25BC';
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .collapsible.active:after {
+            transform: rotate(-180deg);
+        }
+
+        .content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .content textarea {
+            margin-top: 10px;
+        }
+
+        /* Button styles */
+        .btn {
+            background-color: #1da1f2;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0d95e8;
+        }
+
+        /* Timeline styles */
+        .timeline {
+            margin-top: 30px;
+        }
+
+        .tweet-card {
+            background-color: #fff;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tweet-text {
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .tweet-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-count {
+            font-size: 14px;
+            color: #657786;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #1da1f2;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .copy-btn:hover {
+            text-decoration: underline;
+        }
+
+        .copy-confirmation {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background-color: #17bf63;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copy-confirmation.show {
+            opacity: 1;
+        }
+
+        /* Responsive layout */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px 20px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Error and warning messages */
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Clear timeline button */
+        .clear-btn {
+            background-color: #e0245e;
+            margin-top: 10px;
+        }
+
+        .clear-btn:hover {
+            background-color: #c81e50;
+        }
+
+        /* Edit textarea */
+        .edit-textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccd6dd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .save-edit-btn {
+            background-color: #17bf63;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+            align-self: flex-end;
+        }
+
+        .save-edit-btn:hover {
+            background-color: #12a254;
+        }
+
+        /* Generate/Regenerate button */
+        .regenerate-btn {
+            background-color: #1da1f2;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .regenerate-btn:hover {
+            background-color: #0d95e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tweet Optimizer</h1>
+
+        <!-- Message Display -->
+        <div id="message-container"></div>
+
+        <!-- API Key Input -->
+        <div class="form-group">
+            <label for="api-key">OpenAI API Key
+                <span class="tooltip">ℹ️
+                    <span class="tooltiptext">Obtain your API Key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#fff;">OpenAI API Keys</a>.</span>
+                </span>
+            </label>
+            <input type="password" id="api-key" placeholder="Enter your OpenAI API Key">
+            <span class="toggle-password" id="toggle-api-key">Show</span>
+        </div>
+
+        <!-- Model Selector -->
+        <div class="form-group">
+            <label for="model-selector">Select Model
+                <span class="tooltip">ℹ️
+                    <span class="tooltiptext">
+                        <strong>Models:</strong><br>
+                        - gpt-4o<br>
+                        - gpt-4o-min<br>
+                        - chatgpt-4o-latest (default)<br>
+                        - o1-preview<br>
+                        - o1-mini
+                    </span>
+                </span>
+            </label>
+            <select id="model-selector">
+                <option value="chatgpt-4o-latest" selected>chatgpt-4o-latest</option>
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="gpt-4o-min">gpt-4o-min</option>
+                <option value="o1-preview">o1-preview</option>
+                <option value="o1-mini">o1-mini</option>
+            </select>
+        </div>
+
+        <!-- Tweet Text Input -->
+        <div class="form-group">
+            <label for="tweet-text">Tweet Text</label>
+            <textarea id="tweet-text" placeholder="Enter the tweet you want to optimize"></textarea>
+        </div>
+
+        <!-- Collapsible Reply Section -->
+        <button type="button" class="collapsible">Reply to another tweet?</button>
+        <div class="content">
+            <textarea id="reply-text" placeholder="Paste the tweet you are replying to"></textarea>
+        </div>
+
+        <!-- Instructions Input -->
+        <div class="form-group">
+            <label for="instructions">Instructions</label>
+            <input type="text" id="instructions" placeholder="Specify optimization instructions for the AI">
+        </div>
+
+        <!-- Optimize Button -->
+        <div class="form-group">
+            <button class="btn" id="optimize-btn">Optimize</button>
+        </div>
+
+        <!-- Clear Timeline Button -->
+        <div class="form-group">
+            <button class="btn clear-btn" id="clear-timeline-btn">Clear Timeline</button>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="timeline" id="timeline">
+            <!-- Optimized tweets will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        const toggleApiKey = document.getElementById('toggle-api-key');
+        const apiKeyInput = document.getElementById('api-key');
+
+        toggleApiKey.addEventListener('click', () => {
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                toggleApiKey.textContent = 'Hide';
+            } else {
+                apiKeyInput.type = 'password';
+                toggleApiKey.textContent = 'Show';
+            }
+        });
+
+        // Collapsible functionality
+        const collapsible = document.querySelector('.collapsible');
+        const content = document.querySelector('.content');
+
+        collapsible.addEventListener('click', function() {
+            this.classList.toggle('active');
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+
+        // Message Display
+        const messageContainer = document.getElementById('message-container');
+
+        function showMessage(message, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = message;
+            messageContainer.innerHTML = '';
+            messageContainer.appendChild(div);
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                div.remove();
+            }, 5000);
+        }
+
+        // Optimize Button Functionality
+        const optimizeBtn = document.getElementById('optimize-btn');
+        const timeline = document.getElementById('timeline');
+        const clearTimelineBtn = document.getElementById('clear-timeline-btn');
+
+        optimizeBtn.addEventListener('click', async () => {
+            const apiKey = apiKeyInput.value.trim();
+            const model = document.getElementById('model-selector').value;
+            const tweetText = document.getElementById('tweet-text').value.trim();
+            const instructions = document.getElementById('instructions').value.trim();
+            const replyText = document.getElementById('reply-text').value.trim();
+
+            if (!apiKey) {
+                showMessage("Please enter your OpenAI API Key to proceed.", "warning");
+                return;
+            }
+
+            if (!tweetText) {
+                showMessage("Please enter the tweet text to optimize.", "warning");
+                return;
+            }
+
+            // Display "Generating..." in timeline
+            const generatingCard = createTweetCard("Generating...", 0, false);
+            timeline.appendChild(generatingCard);
+
+            // Prepare the prompt
+            let prompt = `Optimize the following tweet based on the instructions provided.\n\nTweet: "${tweetText}"\nInstructions: ${instructions || 'Improve clarity and engagement.'}`;
+
+            if (replyText) {
+                prompt = `Optimize the following reply to a tweet based on the instructions provided.\n\nOriginal Tweet: "${replyText}"\nReply: "${tweetText}"\nInstructions: ${instructions || 'Improve clarity and engagement.'}`;
+            }
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 280, // Adjust as needed
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                const optimizedText = data.choices[0].message.content.trim();
+
+                // Remove "Generating..." card
+                timeline.removeChild(generatingCard);
+
+                // Process the optimized text for threads
+                const tweets = processOptimizedText(optimizedText);
+
+                tweets.forEach((tweet, index) => {
+                    const tweetCard = createTweetCard(tweet, tweets.length, true, index + 1);
+                    timeline.appendChild(tweetCard);
+                });
+
+            } catch (error) {
+                // Remove "Generating..." card
+                timeline.removeChild(generatingCard);
+                showMessage("Failed to optimize tweet. Please check your API Key or model selection.", "error");
+                console.error(error);
+            }
+        });
+
+        // Function to create a tweet card
+        function createTweetCard(text, totalTweets, isOptimized, number = null) {
+            const card = document.createElement('div');
+            card.className = 'tweet-card';
+
+            const tweetDiv = document.createElement('div');
+            tweetDiv.className = 'tweet-text';
+            tweetDiv.textContent = number ? `${number}. ${text}` : text;
+            card.appendChild(tweetDiv);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'tweet-actions';
+
+            const charCount = document.createElement('span');
+            charCount.className = 'char-count';
+            charCount.textContent = `${text.length}/280`;
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.addEventListener('click', () => copyToClipboard(text, card));
+
+            actionsDiv.appendChild(charCount);
+            actionsDiv.appendChild(copyBtn);
+            card.appendChild(actionsDiv);
+
+            if (isOptimized) {
+                // Add regenerate button
+                const regenerateBtn = document.createElement('button');
+                regenerateBtn.className = 'regenerate-btn';
+                regenerateBtn.textContent = 'Regenerate';
+                regenerateBtn.addEventListener('click', () => regenerateTweet(text, card));
+                actionsDiv.appendChild(regenerateBtn);
+            }
+
+            return card;
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text, card) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show confirmation
+                let confirmation = card.querySelector('.copy-confirmation');
+                if (!confirmation) {
+                    confirmation = document.createElement('div');
+                    confirmation.className = 'copy-confirmation';
+                    confirmation.textContent = 'Tweet copied!';
+                    card.appendChild(confirmation);
+                }
+                confirmation.classList.add('show');
+                setTimeout(() => {
+                    confirmation.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Function to process optimized text into tweets (thread)
+        function processOptimizedText(text) {
+            const tweets = [];
+            // Split by line breaks or numbering
+            const lines = text.split(/\n+/).filter(line => line.trim() !== '');
+            lines.forEach(line => {
+                tweets.push(line.trim());
+            });
+
+            // If no line breaks, check if it's a long tweet or list
+            if (tweets.length === 0) {
+                if (text.length > 280) {
+                    // Split into 280 character chunks
+                    let start = 0;
+                    while (start < text.length) {
+                        tweets.push(text.substring(start, start + 280));
+                        start += 280;
+                    }
+                } else {
+                    tweets.push(text);
+                }
+            }
+
+            return tweets;
+        }
+
+        // Function to regenerate a tweet
+        async function regenerateTweet(originalText, card) {
+            const apiKey = apiKeyInput.value.trim();
+            const model = document.getElementById('model-selector').value;
+            const instructions = document.getElementById('instructions').value.trim();
+            const replyText = document.getElementById('reply-text').value.trim();
+
+            if (!apiKey) {
+                showMessage("Please enter your OpenAI API Key to proceed.", "warning");
+                return;
+            }
+
+            // Show "Generating..." in place of the tweet
+            const originalContent = card.querySelector('.tweet-text').textContent;
+            card.querySelector('.tweet-text').textContent = "Generating...";
+
+            // Prepare the prompt
+            let prompt = `Optimize the following tweet based on the instructions provided.\n\nTweet: "${originalText}"\nInstructions: ${instructions || 'Improve clarity and engagement.'}`;
+
+            if (replyText) {
+                prompt = `Optimize the following reply to a tweet based on the instructions provided.\n\nOriginal Tweet: "${replyText}"\nReply: "${originalText}"\nInstructions: ${instructions || 'Improve clarity and engagement.'}`;
+            }
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 280,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                const optimizedText = data.choices[0].message.content.trim();
+
+                // Update the tweet card
+                card.querySelector('.tweet-text').textContent = optimizedText;
+                card.querySelector('.char-count').textContent = `${optimizedText.length}/280`;
+
+            } catch (error) {
+                // Restore original content
+                card.querySelector('.tweet-text').textContent = originalText;
+                showMessage("Failed to regenerate tweet. Please check your API Key or model selection.", "error");
+                console.error(error);
+            }
+        }
+
+        // Clear Timeline Functionality
+        clearTimelineBtn.addEventListener('click', () => {
+            timeline.innerHTML = '';
+        });
+
+        // Allow editing tweets
+        timeline.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tweet-text')) {
+                const tweetDiv = e.target;
+                const currentText = tweetDiv.textContent;
+                const textarea = document.createElement('textarea');
+                textarea.className = 'edit-textarea';
+                textarea.value = currentText;
+                tweetDiv.replaceWith(textarea);
+
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'save-edit-btn';
+                saveBtn.textContent = 'Save';
+                textarea.parentNode.insertBefore(saveBtn, textarea.nextSibling);
+
+                saveBtn.addEventListener('click', () => {
+                    const newText = textarea.value.trim();
+                    if (newText) {
+                        tweetDiv.textContent = newText;
+                        textarea.replaceWith(tweetDiv);
+                        saveBtn.remove();
+                        // Update character count
+                        const charCount = textarea.parentNode.querySelector('.char-count');
+                        charCount.textContent = `${newText.length}/280`;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

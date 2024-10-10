@@ -1,0 +1,88 @@
+Section: Main Features
+
+1. Display a password protected input field labeled "OpenAI API Key".
+    Note: Link the user to https://platform.openai.com/api-keys for obtaining their key.
+
+2. Create a model selector dropdown with the following options:
+    - gpt-4o
+    - gpt-4o-min
+    - chatgpt-4o-latest (default)
+    - o1-preview
+    - o1-mini
+
+3. Add an input field labeled "Tweet Text" for the user to enter the tweet they want to optimize.
+
+4. Add a collapsible section labeled "Reply to another tweet?".
+    - When clicked, reveal a textarea field for pasting the tweet being replied to.
+
+5. Add an input field labeled "Instructions" for the user to specify the optimization instructions for the AI.
+
+6. Create a button labeled "Optimize" to trigger the AI to optimize the tweet.
+    - If the tweet is long or contains lists, the model will generate a thread of tweets.
+    - Ensure long tweets with lists of items return a list of tweets, creating a thread format.
+    - Add a "1/count" at the end of long tweets or begin the replies with a numbered list (e.g., "1. title").
+
+7. Below the main tweet editor, display a timeline where optimized tweets appear in real time.
+    - Display the character count for each tweet.
+    - Provide a "Copy" button next to each tweet, which copies it to the clipboard.
+    - When a generated tweet is clicked, allow the user to edit the text.
+
+8. If the user is optimizing a thread, display each tweet as a separate item in the timeline (primary tweet first, followed by the replies).
+
+9. Add a "Generate/Regenerate" affordance for the main editor, allowing users to generate or regenerate tweet suggestions.
+
+Section: Styles
+
+1. Define a modern responsive layout:
+    - The design should adjust seamlessly between desktop and mobile devices.
+    - Use a central layout for the tweet timeline, with the tweet editor and input fields positioned above the timeline.
+
+2. For the tweet timeline:
+    - Use clean, minimal card designs for each tweet, including the generated ones.
+    - Apply a character counter display inside each tweet card to indicate tweet length.
+    - Add a "Copy" button styled as a small icon next to each generated tweet.
+
+3. For the model selector and input fields:
+    - Use dropdown and text input designs that are consistent and modern.
+    - The API Key input should be styled as a password field with a "Show/Hide" toggle button.
+    - Apply tooltips with explanations for advanced users regarding each model.
+
+4. For collapsible reply section:
+    - Use a subtle arrow icon to indicate expand/collapse functionality.
+    - When expanded, the reply input box should slide down smoothly.
+
+Section: Error Handling
+
+1. If the user attempts to optimize without providing an API Key:
+    - Display a warning message: "Please enter your OpenAI API Key to proceed."
+
+2. If the API request fails:
+    - Display an error message: "Failed to optimize tweet. Please check your API Key or model selection."
+
+Section: Timeline Functionality
+
+1. When the user clicks "Optimize":
+    - Display "Generating..." in the timeline while waiting for the API response.
+    - Once the response is received, populate the timeline with the optimized tweet(s).
+
+2. For long tweets that are returned as threads:
+    - Display the primary tweet first, followed by replies in chronological order (thread structure).
+
+3. Ensure each tweet card has a "Copy" button:
+    - Clicking the "Copy" button will copy the tweet's content to the clipboard.
+    - Add an on-click confirmation like "Tweet copied!" for user feedback.
+
+Section: API and Backend Interaction
+
+1. Upon clicking "Optimize", send the API Key, tweet text, model choice, and instructions to the OpenAI API.
+    - If a reply tweet is provided, include it in the prompt sent to the API.
+
+2. For list-based tweets:
+    - The API should return tweets formatted as a thread, with numbering or "n/count" as specified.
+
+3. Return the generated tweet(s) to the user in the timeline section, with options to edit, copy, or regenerate.
+
+Section: Final Adjustments
+
+1. Provide an option to clear the timeline for starting over.
+2. Ensure that any text in the reply or tweet input fields is retained unless cleared manually by the user.
