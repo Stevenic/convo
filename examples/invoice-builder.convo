@@ -1,0 +1,157 @@
+Section: AI Invoice Builder
+
+Task: Build an AI-powered invoice builder app using OpenAI models for reasoning and local storage for saving invoices and settings.
+
+---
+
+Section: Settings Screen
+
+1. Ask the user for their OpenAI API key.
+    - Display a link to generate the key: "https://platform.openai.com/api-keys".
+    - Hide the API key after input for security.
+
+2. Let the user choose a model to use for invoice generation.
+    - Options: 
+        - "chatgpt-4o-latest" (default),
+        - "gpt-4o",
+        - "gpt-4o-mini",
+        - "o1-preview",
+        - "o1-mini".
+    - Set the selected model for future invoice generation.
+
+3. Ask the user to input their default billing address.
+    - Example: 
+        ```
+        Billing Name
+        1234 Main St, Suite 100
+        Cityville, ST 12345
+        ```
+
+4. Ask the user to configure an invoice markdown template.
+    - Provide a default markdown template:
+    ```
+    ## Invoice
+
+    **Date:** {date}
+
+    #### Billing Address:
+    {billing_address}
+
+    #### Customer Address:
+    {customer_address}
+
+    #### Invoice Details:
+    {invoice_items}
+
+    **Total:** {total_amount}
+
+    *Thank you for your business!*    
+    ```
+    - Allow the user to modify this template for future invoices.
+
+5. Provide a "Save Settings" button to store the API key, selected model, billing address, and template in local storage. Validate that all fields are populated.
+
+6. Display as a popup over the main invoice screen and automatically show on load anytime a settings field is empty.
+
+---
+
+Section: Invoice Screen
+
+1. Create a layout with a two-column design:
+    - **Left Column**: Display a list of saved invoices.
+        - Invoices are color-coded based on their status:
+            - "draft": yellow
+            - "billed": orange
+            - "paid": green.
+        - Add a button labeled "Create New Invoice" at the top to generate a new invoice.
+
+    - **Right Column**: Display the detail view of the selected invoice.
+        - Add a text box for entering the prompt used to generate the invoice.
+        - Add a button labeled "Generate" to generate the invoice using the OpenAI model.
+        - Show the invoice in two tabs:
+            - "Preview": Display the markdown invoice as formatted output.
+            - "Edit": Display the raw markdown, allowing the user to tweak the invoice content.
+        - Add a dropdown or radio button to set the invoice status:
+            - Options: "draft", "billed", "paid".
+        - Add a "Notes" tab to keep a record of state changes and any other comments:
+            - Automatically append status changes with timestamps to the notes.
+        
+2. Add buttons for managing the invoice:
+    - **Save**: Save the current invoice to local storage.
+    - **Print**: Print the invoice.
+    - **Delete**: Delete the invoice (prompt for confirmation).
+
+3. When generating an invoice:
+    - Send the user's prompt to the OpenAI model, along with:
+        - The current date.
+        - The user's configured billing address.
+        - The invoice template.
+    - The AI model should return an invoice based on the prompt and template.
+    - Show a loading spinner while waiting for the response.
+
+4. On re-generating an invoice:
+    - Include the current invoice content in the prompt so that the model can modify the existing invoice.
+    - Display the updated invoice in the Preview and Edit tabs.
+
+5. Invoices, status, and associated notes are saved to local storage.
+
+---
+
+Section: Invoice Generation Logic
+
+1. When the user clicks "Generate":
+    - Use the selected OpenAI model to generate the invoice.
+    - Pass the following details to the model:
+        - User's input prompt.
+        - Current date.
+        - Configured billing address.
+        - Invoice template.
+    - Instruct the model to generate the invoice strictly using the given template and prompt.
+
+2. When regenerating an invoice:
+    - Pass the current invoice content along with the prompt to allow the model to make adjustments.
+    - Instruct the model to return the modified invoice.
+
+3. Upon receiving the invoice from the model, store the following details in local storage:
+    - Invoice content.
+    - Status ("draft", "billed", "paid").
+    - Notes related to state changes.
+
+---
+
+Section: Styles
+
+1. Apply a clean, modern style with a light theme.
+    - Use the full width and height of the browser window to maximize space.
+
+2. **Invoice List (left column)**:
+    - Color-code invoices:
+        - "draft": yellow background.
+        - "billed": orange background.
+        - "paid": green background.
+    - Highlight the selected invoice.
+
+3. **Detail View (right column)**:
+    - Tabs should be clear and easy to navigate:
+        - "Preview" for formatted display.
+        - "Edit" for markdown adjustments.
+        - "Notes" for tracking state changes.
+    - Use a modern font and appropriate spacing for readability.
+
+4. **Settings Screen**:
+    - Form-based layout.
+    - Clean, labeled fields with rounded buttons.
+    - Ensure a modern look with hover effects on buttons.
+
+5. Add a spinner for model calls next to the "Generate" button to indicate loading.
+
+---
+
+Section: Data Persistence and Local Storage
+
+1. Store the following in local storage:
+    - API key (securely stored, never displayed).
+    - Selected model for AI generation.
+    - Default billing address.
+    - Invoice markdown template.
+    - All invoices with their content, status, and notes.

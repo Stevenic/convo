@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Invoice Builder</title>
+    <!-- Include Marked library -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Reset and basic styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        /* Header */
+        #header {
+            width: 100%;
+            height: 60px;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        #header h1 {
+            font-size: 24px;
+        }
+        #settings-button {
+            background-color: #ffffff;
+            color: #4CAF50;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #settings-button:hover {
+            background-color: #45a049;
+            color: white;
+        }
+        /* Layout */
+        #app {
+            display: flex;
+            height: calc(100% - 60px);
+        }
+        /* Left Column - Invoice List */
+        #invoice-list {
+            width: 25%;
+            background-color: #ffffff;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        #invoice-list h2 {
+            margin-bottom: 20px;
+        }
+        #create-invoice-btn {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #create-invoice-btn:hover {
+            background-color: #45a049;
+        }
+        .invoice-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #333;
+            transition: background-color 0.3s, border 0.3s;
+        }
+        .invoice-item.selected {
+            border: 2px solid #4CAF50;
+        }
+        .invoice-item.draft {
+            background-color: #fff8e1;
+        }
+        .invoice-item.billed {
+            background-color: #ffe0b2;
+        }
+        .invoice-item.paid {
+            background-color: #c8e6c9;
+        }
+        /* Right Column - Invoice Details */
+        #invoice-details {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #invoice-details h2 {
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical; /* Allow vertical resizing */
+        }
+        #generate-btn {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+        #generate-btn:hover {
+            background-color: #0b7dda;
+        }
+        /* Spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #555;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg) translateY(-50%); }
+            100% { transform: rotate(360deg) translateY(-50%); }
+        }
+        /* Tabs */
+        .tabs {
+            margin-top: 20px;
+        }
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+        }
+        .tab-buttons button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #f1f1f1;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1;
+        }
+        .tab-buttons button.active {
+            background-color: #ffffff;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .tab-content {
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-top: none;
+            overflow-wrap: break-word; /* Ensure long words break */
+        }
+        .tab-content.hidden {
+            display: none;
+        }
+        /* Specific Styling for Rendered Markdown */
+        .tab-content p {
+            margin-bottom: 1em; /* Adds space between paragraphs */
+            line-height: 1.6; /* Improves readability */
+        }
+        .tab-content h1, .tab-content h2, .tab-content h3, .tab-content h4, .tab-content h5, .tab-content h6 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        .tab-content ul, .tab-content ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+        }
+        .tab-content a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        .tab-content a:hover {
+            text-decoration: underline;
+        }
+        .tab-content code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .tab-content pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        /* Invoice Status Dropdown */
+        .status-group {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        /* Notes */
+        #notes {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 20px;
+        }
+        .action-buttons button {
+            padding: 10px 15px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .save-btn:hover {
+            background-color: #45a049;
+        }
+        .print-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .print-btn:hover {
+            background-color: #0b7dda;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        /* Settings Popup */
+        #settings-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #settings-form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+        }
+        #settings-form h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #settings-form .input-group {
+            margin-bottom: 15px;
+        }
+        #settings-form .input-group label {
+            font-weight: bold;
+        }
+        #settings-form .input-group a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        #settings-form .input-group a:hover {
+            text-decoration: underline;
+        }
+        #save-settings-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #save-settings-btn:hover {
+            background-color: #45a049;
+        }
+        /* Modal Close Button */
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: #000;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            #app {
+                flex-direction: column;
+            }
+            #invoice-list {
+                width: 100%;
+                height: 200px;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+            #invoice-details {
+                height: calc(100% - 200px);
+            }
+            .tab-buttons button {
+                padding: 10px 5px;
+                font-size: 14px;
+            }
+            /* Ensure textarea in edit tab is full width */
+            #edit-markdown {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Settings Button -->
+    <div id="header">
+        <h1>AI Invoice Builder</h1>
+        <button id="settings-button">Settings</button>
+    </div>
+    <div id="app">
+        <!-- Left Column - Invoice List -->
+        <div id="invoice-list">
+            <h2>Invoices</h2>
+            <button id="create-invoice-btn">Create New Invoice</button>
+            <div id="invoices-container">
+                <!-- Invoice items will be injected here -->
+            </div>
+        </div>
+        <!-- Right Column - Invoice Details -->
+        <div id="invoice-details">
+            <h2>Invoice Details</h2>
+            <div id="details-container">
+                <p>Select an invoice to view details.</p>
+            </div>
+        </div>
+    </div>
+    <!-- Settings Popup -->
+    <div id="settings-popup">
+        <div id="settings-form">
+            <span class="close-btn" id="close-settings">&times;</span>
+            <h2>Settings</h2>
+            <div class="input-group">
+                <label for="api-key">OpenAI API Key:</label>
+                <input type="password" id="api-key" placeholder="Enter your OpenAI API Key">
+                <small>Generate your API key <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</small>
+            </div>
+            <div class="input-group">
+                <label for="model-select">Select AI Model:</label>
+                <select id="model-select">
+                    <option value="chatgpt-4o-latest" selected>chatgpt-4o-latest</option>
+                    <option value="gpt-4o">gpt-4o</option>
+                    <option value="gpt-4o-mini">gpt-4o-mini</option>
+                    <option value="o1-preview">o1-preview</option>
+                    <option value="o1-mini">o1-mini</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="billing-address">Default Billing Address:</label>
+                <textarea id="billing-address" rows="4" placeholder="Billing Name
+1234 Main St, Suite 100
+Cityville, ST 12345"></textarea>
+            </div>
+            <div class="input-group">
+                <label for="template">Invoice Markdown Template:</label>
+                <textarea id="template" rows="8">## Invoice
+
+**Date:** {date}
+
+#### Billing Address:
+{billing_address}
+
+#### Customer Address:
+{customer_address}
+
+#### Invoice Details:
+{invoice_items}
+
+**Total:** {total_amount}
+
+*Thank you for your business!*</textarea>
+            </div>
+            <button id="save-settings-btn">Save Settings</button>
+        </div>
+    </div>
+    <script>
+        // Initialize Variables
+        let settings = {
+            apiKey: '',
+            model: 'chatgpt-4o-latest',
+            billingAddress: '',
+            template: `## Invoice
+
+**Date:** {date}
+
+#### Billing Address:
+{billing_address}
+
+#### Customer Address:
+{customer_address}
+
+#### Invoice Details:
+{invoice_items}
+
+**Total:** {total_amount}
+
+*Thank you for your business!*`
+        };
+        let invoices = [];
+        let selectedInvoiceId = null;
+
+        // DOM Elements
+        const settingsPopup = document.getElementById('settings-popup');
+        const closeSettingsBtn = document.getElementById('close-settings');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const apiKeyInput = document.getElementById('api-key');
+        const modelSelect = document.getElementById('model-select');
+        const billingAddressInput = document.getElementById('billing-address');
+        const templateInput = document.getElementById('template');
+
+        const settingsButton = document.getElementById('settings-button');
+        const createInvoiceBtn = document.getElementById('create-invoice-btn');
+        const invoicesContainer = document.getElementById('invoices-container');
+        const detailsContainer = document.getElementById('details-container');
+
+        // Load Settings from Local Storage
+        function loadSettings() {
+            const storedSettings = localStorage.getItem('ai_invoice_settings');
+            if (storedSettings) {
+                try {
+                    settings = JSON.parse(storedSettings);
+                    console.log('Settings loaded successfully:', settings);
+                } catch (error) {
+                    console.error('Error parsing settings from localStorage:', error);
+                }
+            } else {
+                console.log('No settings found in localStorage.');
+            }
+        }
+
+        // Save Settings to Local Storage
+        function saveSettings() {
+            localStorage.setItem('ai_invoice_settings', JSON.stringify(settings));
+            console.log('Settings saved successfully:', settings);
+        }
+
+        // Load Invoices from Local Storage
+        function loadInvoices() {
+            const storedInvoices = localStorage.getItem('ai_invoice_invoices');
+            if (storedInvoices) {
+                try {
+                    invoices = JSON.parse(storedInvoices);
+                    console.log('Invoices loaded successfully:', invoices);
+                } catch (error) {
+                    console.error('Error parsing invoices from localStorage:', error);
+                }
+            } else {
+                console.log('No invoices found in localStorage.');
+            }
+        }
+
+        // Save Invoices to Local Storage
+        function saveInvoices() {
+            localStorage.setItem('ai_invoice_invoices', JSON.stringify(invoices));
+            console.log('Invoices saved successfully:', invoices);
+        }
+
+        // Check if all settings are populated
+        function areSettingsComplete() {
+            return settings.apiKey && settings.model && settings.billingAddress && settings.template;
+        }
+
+        // Show Settings Popup
+        function showSettings() {
+            // Populate the form with existing settings
+            apiKeyInput.value = settings.apiKey;
+            modelSelect.value = settings.model;
+            billingAddressInput.value = settings.billingAddress;
+            templateInput.value = settings.template;
+            settingsPopup.style.display = 'flex';
+            console.log('Settings popup displayed.');
+        }
+
+        // Hide Settings Popup
+        function hideSettings() {
+            settingsPopup.style.display = 'none';
+            console.log('Settings popup hidden.');
+        }
+
+        // Initialize Application
+        function init() {
+            loadSettings();
+            loadInvoices();
+            if (!areSettingsComplete()) {
+                showSettings();
+            }
+            renderInvoiceList();
+        }
+
+        // Render Invoice List
+        function renderInvoiceList() {
+            invoicesContainer.innerHTML = '';
+            if (invoices.length === 0) {
+                invoicesContainer.innerHTML = '<p>No invoices found. Click "Create New Invoice" to get started.</p>';
+                return;
+            }
+            invoices.forEach(invoice => {
+                const div = document.createElement('div');
+                div.classList.add('invoice-item');
+                div.classList.add(invoice.status);
+                if (invoice.id === selectedInvoiceId) {
+                    div.classList.add('selected');
+                }
+                div.textContent = `#${invoice.id} - ${invoice.status.toUpperCase()} - ${invoice.date}`;
+                div.addEventListener('click', () => {
+                    selectedInvoiceId = invoice.id;
+                    renderInvoiceList();
+                    renderInvoiceDetails();
+                });
+                invoicesContainer.appendChild(div);
+            });
+        }
+
+        // Create New Invoice
+        createInvoiceBtn.addEventListener('click', () => {
+            const newInvoice = {
+                id: Date.now(),
+                prompt: '',
+                content: '',
+                status: 'draft',
+                notes: [`Invoice created on ${new Date().toLocaleString()}`],
+                date: new Date().toLocaleDateString()
+            };
+            invoices.push(newInvoice);
+            saveInvoices();
+            selectedInvoiceId = newInvoice.id;
+            renderInvoiceList();
+            renderInvoiceDetails();
+            console.log('New invoice created:', newInvoice);
+        });
+
+        // Render Invoice Details
+        function renderInvoiceDetails() {
+            const invoice = invoices.find(inv => inv.id === selectedInvoiceId);
+            if (!invoice) {
+                detailsContainer.innerHTML = '<p>Select an invoice to view details.</p>';
+                return;
+            }
+            detailsContainer.innerHTML = `
+                <div class="input-group">
+                    <label for="prompt">Prompt:</label>
+                    <textarea id="prompt" rows="3" placeholder="Enter prompt to generate invoice">${invoice.prompt}</textarea>
+                </div>
+                <button id="generate-btn">Generate <div class="spinner" id="generate-spinner"></div></button>
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="preview">Preview</button>
+                        <button class="tab-btn" data-tab="edit">Edit</button>
+                        <button class="tab-btn" data-tab="notes">Notes</button>
+                    </div>
+                    <div class="tab-content" id="preview-tab">
+                        ${marked.parse(invoice.content || '')}
+                    </div>
+                    <div class="tab-content hidden" id="edit-tab">
+                        <textarea id="edit-markdown" rows="15">${invoice.content}</textarea>
+                    </div>
+                    <div class="tab-content hidden" id="notes-tab">
+                        <div id="notes">
+                            ${invoice.notes.map(note => `<p>${note}</p>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="status-group">
+                    <label for="status-select">Invoice Status:</label>
+                    <select id="status-select">
+                        <option value="draft" ${invoice.status === 'draft' ? 'selected' : ''}>Draft</option>
+                        <option value="billed" ${invoice.status === 'billed' ? 'selected' : ''}>Billed</option>
+                        <option value="paid" ${invoice.status === 'paid' ? 'selected' : ''}>Paid</option>
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <button class="save-btn">Save</button>
+                    <button class="print-btn">Print</button>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            `;
+            // Add Event Listeners
+            document.getElementById('generate-btn').addEventListener('click', generateInvoice);
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+                    document.getElementById(`${btn.dataset.tab}-tab`).classList.remove('hidden');
+                });
+            });
+            document.getElementById('status-select').addEventListener('change', (e) => {
+                const newStatus = e.target.value;
+                if (invoice.status !== newStatus) {
+                    invoice.status = newStatus;
+                    invoice.notes.push(`Status changed to ${newStatus} on ${new Date().toLocaleString()}`);
+                    renderInvoiceDetails();
+                    renderInvoiceList();
+                    saveInvoices();
+                    console.log(`Invoice #${invoice.id} status changed to ${newStatus}.`);
+                }
+            });
+            document.querySelector('.save-btn').addEventListener('click', () => {
+                const editedContent = document.getElementById('edit-markdown').value;
+                invoice.content = editedContent;
+                invoice.prompt = document.getElementById('prompt').value;
+                saveInvoices();
+                renderInvoiceList();
+                renderInvoiceDetails();
+                console.log(`Invoice #${invoice.id} saved.`);
+            });
+            document.querySelector('.print-btn').addEventListener('click', () => {
+                const printWindow = window.open('', '', 'height=600,width=800');
+                printWindow.document.write('<html><head><title>Print Invoice</title></head><body>');
+                printWindow.document.write(marked.parse(invoice.content));
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
+                printWindow.print();
+                console.log(`Invoice #${invoice.id} sent to print.`);
+            });
+            document.querySelector('.delete-btn').addEventListener('click', () => {
+                if (confirm('Are you sure you want to delete this invoice?')) {
+                    invoices = invoices.filter(inv => inv.id !== selectedInvoiceId);
+                    saveInvoices();
+                    selectedInvoiceId = null;
+                    renderInvoiceList();
+                    renderInvoiceDetails();
+                    console.log(`Invoice #${invoice.id} deleted.`);
+                }
+            });
+        }
+
+        // Generate Invoice using OpenAI
+        async function generateInvoice() {
+            const invoice = invoices.find(inv => inv.id === selectedInvoiceId);
+            if (!invoice) return;
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt.');
+                return;
+            }
+            // Validate Settings
+            if (!areSettingsComplete()) {
+                alert('Please complete all settings.');
+                showSettings();
+                return;
+            }
+            // Prepare API Call
+            const spinner = document.getElementById('generate-spinner');
+            spinner.style.display = 'block';
+            document.getElementById('generate-btn').disabled = true;
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: settings.model,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are an AI assistant that generates invoices based on provided templates and prompts. Follow the template strictly without adding any additional sections or information.'
+                            },
+                            {
+                                role: 'user',
+                                content: generateAIRequestContent(prompt, invoice.content)
+                            }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Error: ${response.status} ${response.statusText} - ${errorData.error.message}`);
+                }
+                const data = await response.json();
+                const aiContent = data.choices[0].message.content.trim();
+                if (!aiContent) {
+                    throw new Error('Received empty response from OpenAI.');
+                }
+                invoice.content = aiContent;
+                invoice.prompt = prompt;
+                invoice.date = new Date().toLocaleDateString();
+                invoice.notes.push(`Invoice generated on ${new Date().toLocaleString()}.`);
+                saveInvoices();
+                renderInvoiceDetails();
+                renderInvoiceList();
+                console.log(`Invoice #${invoice.id} generated successfully.`);
+            } catch (error) {
+                alert(`Failed to generate invoice: ${error.message}`);
+                console.error('Generate Invoice Error:', error);
+            } finally {
+                spinner.style.display = 'none';
+                document.getElementById('generate-btn').disabled = false;
+            }
+        }
+
+        // Generate AI Request Content
+        function generateAIRequestContent(prompt, existingContent) {
+            let content = `Using the following template, generate an invoice based on this prompt:
+
+Prompt: "${prompt}"
+
+Template:
+${settings.template}
+
+Billing Address:
+${settings.billingAddress}
+
+Date: ${new Date().toLocaleDateString()}
+
+`;
+            if (existingContent) {
+                content += `Existing Invoice Content:
+${existingContent}
+
+Please modify the existing invoice based on the new prompt.`;
+            }
+            return content;
+        }
+
+        // Settings Save Button
+        saveSettingsBtn.addEventListener('click', () => {
+            const apiKey = apiKeyInput.value.trim();
+            const model = modelSelect.value;
+            const billingAddress = billingAddressInput.value.trim();
+            const template = templateInput.value.trim();
+            if (!apiKey || !model || !billingAddress || !template) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            settings.apiKey = apiKey;
+            settings.model = model;
+            settings.billingAddress = billingAddress;
+            settings.template = template;
+            saveSettings();
+            hideSettings();
+            alert('Settings saved successfully!');
+            console.log('Settings have been updated.');
+        });
+
+        // Close Settings Popup
+        closeSettingsBtn.addEventListener('click', hideSettings);
+
+        // Open Settings Popup via Settings Button
+        settingsButton.addEventListener('click', showSettings);
+
+        // Close Settings Popup when clicking outside the form
+        window.addEventListener('click', (e) => {
+            if (e.target === settingsPopup) {
+                hideSettings();
+            }
+        });
+
+        // Initial Load
+        init();
+    </script>
+</body>
+</html>
