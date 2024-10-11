@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurant Reservation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 25px 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .config-section, .log-section {
+            margin-bottom: 25px;
+        }
+        .config-section h2, .log-section h2 {
+            margin-bottom: 15px;
+            color: #444;
+        }
+        .config-section label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        .config-section input, .config-section select, .config-section button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #startButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #startButton:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f1f1f1;
+            padding: 15px;
+            height: 500px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .log-entry {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        .agent1 {
+            color: #007bff;
+            font-weight: bold;
+        }
+        .agent2 {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .system {
+            color: #6c757d;
+            font-style: italic;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Restaurant Reservation System</h1>
+    
+    <div class="config-section">
+        <h2>Configuration</h2>
+        <label for="apiKey">OpenAI API Key:</label>
+        <input type="password" id="apiKey" placeholder="Enter your OpenAI API Key">
+
+        <label for="llmModel">Chat Completion Model:</label>
+        <select id="llmModel">
+            <option value="chatgpt-4o-latest">chatgpt-4o-latest</option>
+            <option value="gpt-4">gpt-4</option>
+            <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            <!-- Add more models if needed -->
+        </select>
+    </div>
+
+    <button id="startButton">Start Reservation Process</button>
+
+    <div class="log-section">
+        <h2>Process Log</h2>
+        <div class="log" id="log"></div>
+    </div>
+</div>
+
+<script>
+    // Reservation System State
+    const restaurant = {
+        bookings: [
+            { time: '7:30 PM', location: 'main dining', partySize: 4 },
+            { time: '8:00 PM', location: 'main dining', partySize: 2 },
+            // Add more bookings as needed
+        ],
+        logReservation: function(reservation) {
+            this.bookings.push(reservation);
+        },
+        findAvailableTable: function(partySize, preferredTime, seatingPreference) {
+            // Simple availability logic
+            for (let booking of this.bookings) {
+                if (
+                    booking.partySize === partySize &&
+                    booking.time === preferredTime &&
+                    booking.location === seatingPreference
+                ) {
+                    return null; // Table is booked
+                }
+            }
+            // For simplicity, assume the next available time is 7:30 PM if after 7 PM
+            if (preferredTime.includes('7 PM')) {
+                return { time: '7:30 PM', location: seatingPreference };
+            } else {
+                return { time: '8:00 PM', location: seatingPreference };
+            }
+        }
+    };
+
+    // Log Utility
+    function logMessage(message, sender) {
+        const log = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.classList.add('log-entry');
+        if (sender === 'Agent1') {
+            entry.classList.add('agent1');
+            entry.textContent = `Agent 1: ${message}`;
+        } else if (sender === 'Agent2') {
+            entry.classList.add('agent2');
+            entry.textContent = `Agent 2: ${message}`;
+        } else if (sender === 'System') {
+            entry.classList.add('system');
+            entry.textContent = `System: ${message}`;
+        } else if (sender === 'Error') {
+            entry.classList.add('error');
+            entry.textContent = `Error: ${message}`;
+        }
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    // Function to call OpenAI's Chat Completion API
+    async function callOpenAI(apiKey, model, messages) {
+        const url = 'https://api.openai.com/v1/chat/completions';
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        };
+        const body = {
+            model: model,
+            messages: messages,
+            temperature: 0.2
+        };
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error.message || 'Unknown error from OpenAI API');
+            }
+
+            const data = await response.json();
+            const assistantMessage = data.choices[0].message.content.trim();
+            return assistantMessage;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+
+    // Agent 1 (User Agent)
+    const Agent1 = {
+        userName: 'Steve',
+        partySize: 2,
+        preferredTime: 'anytime after 7 PM',
+        seatingPreference: 'least crowded',
+
+        initiateReservation: async function(apiKey, model) {
+            logMessage(`Attempting to book a table for ${this.userName}.`, 'Agent1');
+
+            // Construct reservation request message
+            const reservationMessage = `I would like to book a table for ${this.partySize} people after 7 PM in the least crowded area.`;
+            logMessage(`Sending message to Reservation Agent: "${reservationMessage}"`, 'Agent1');
+
+            // Define messages for LLM with strict JSON response instruction
+            const messages = [
+                { role: 'system', content: `You are a reservation agent. Please extract the reservation details from the user's message and respond strictly in the following JSON format without any additional text:
+
+{
+    "partySize": <number>,
+    "time": "<preferred time>",
+    "seatingPreference": "<seating preference>"
+}
+
+**Example Response:**
+
+{
+    "partySize": 2,
+    "time": "after 7 PM",
+    "seatingPreference": "least crowded area"
+}` },
+                { role: 'user', content: reservationMessage }
+            ];
+
+            try {
+                // Call OpenAI API to interpret the reservation request
+                logMessage('Contacting OpenAI for reservation details...', 'System');
+                const llmResponse = await callOpenAI(apiKey, model, messages);
+                logMessage(`LLM Response: "${llmResponse}"`, 'System');
+
+                // Parse the LLM response for reservation details
+                const reservationDetails = parseLLMResponse(llmResponse);
+
+                if (!reservationDetails) {
+                    throw new Error('Failed to parse reservation details from LLM response.');
+                }
+
+                logMessage(`Interpreted Request - Party Size: ${reservationDetails.partySize}, Time: ${reservationDetails.time}, Seating Preference: ${reservationDetails.seatingPreference}`, 'System');
+
+                // Proceed to Agent 2 to process the reservation
+                await Agent2.processReservation(reservationDetails, apiKey, model);
+            } catch (error) {
+                logMessage(error.message, 'Error');
+            }
+        },
+
+        handleResponse: function(message) {
+            if (message.includes('reservation is confirmed')) {
+                // Extract available time and location
+                const timeMatch = message.match(/for (.*?) in/);
+                const locationMatch = message.match(/in (.*)\./);
+                const availableTime = timeMatch ? timeMatch[1] : 'unknown time';
+                const seatingLocation = locationMatch ? locationMatch[1] : 'unknown location';
+
+                logMessage(`Reservation confirmed for ${this.userName} at ${availableTime} in ${seatingLocation}.`, 'Agent1');
+            } else if (message.includes('no available tables')) {
+                logMessage(`Unfortunately, no tables matching ${this.userName}'s preferences are available.`, 'Agent1');
+            } else {
+                logMessage(`Received unexpected message: "${message}"`, 'Agent1');
+            }
+        }
+    };
+
+    // Agent 2 (Reservation Agent)
+    const Agent2 = {
+        async processReservation(details, apiKey, model) {
+            logMessage('Processing reservation request.', 'Agent2');
+
+            // Define messages for LLM to confirm or refine reservation details if needed
+            const messages = [
+                { role: 'system', content: `You are a reservation agent. Given the following reservation details, check table availability and respond strictly in JSON format. Provide a confirmation or apology as specified.
+
+**Reservation Details:**
+
+{
+    "partySize": ${details.partySize},
+    "time": "${details.time}",
+    "seatingPreference": "${details.seatingPreference}"
+}
+
+**Response Format:**
+
+- If confirmed:
+{
+    "status": "confirmed",
+    "time": "<available time>",
+    "location": "<seating location>"
+}
+
+- If not available:
+{
+    "status": "unavailable",
+    "message": "Sorry, no available tables [after/before] [requested time] that match your preferences."
+}
+
+**Example Confirmation Response:**
+
+{
+    "status": "confirmed",
+    "time": "7:30 PM",
+    "location": "main dining"
+}
+
+**Example Unavailability Response:**
+
+{
+    "status": "unavailable",
+    "message": "Sorry, no available tables after 7 PM that match your preferences."
+}
+
+**Please respond only with the JSON object as specified above without any additional text.}` },
+                { role: 'user', content: `Process the following reservation details: Party Size: ${details.partySize}, Time: ${details.time}, Seating Preference: ${details.seatingPreference}` }
+            ];
+
+            try {
+                // Optionally, use LLM to confirm or refine details
+                logMessage('Confirming reservation details with OpenAI...', 'System');
+                const llmConfirmation = await callOpenAI(apiKey, model, messages);
+                logMessage(`LLM Confirmation: "${llmConfirmation}"`, 'System');
+
+                // Parse the LLM confirmation response
+                const confirmationDetails = parseLLMConfirmation(llmConfirmation);
+
+                if (!confirmationDetails) {
+                    throw new Error('Failed to parse confirmation details from LLM response.');
+                }
+
+                if (confirmationDetails.status === 'confirmed') {
+                    // Log the reservation
+                    restaurant.logReservation({
+                        time: confirmationDetails.time,
+                        location: confirmationDetails.location,
+                        partySize: details.partySize
+                    });
+
+                    // Construct confirmation message
+                    const confirmationMessage = `Your reservation is confirmed for ${confirmationDetails.time} in ${confirmationDetails.location}.`;
+                    logMessage(`Sending confirmation to User Agent: "${confirmationMessage}"`, 'Agent2');
+
+                    // Send confirmation to Agent1
+                    Agent1.handleResponse(confirmationMessage);
+                } else if (confirmationDetails.status === 'unavailable') {
+                    // Send apology to Agent1
+                    const apologyMessage = confirmationDetails.message;
+                    logMessage(`Sending apology to User Agent: "${apologyMessage}"`, 'Agent2');
+
+                    Agent1.handleResponse(apologyMessage);
+                } else {
+                    throw new Error('Unexpected status in LLM confirmation response.');
+                }
+            } catch (error) {
+                logMessage(error.message, 'Error');
+            }
+        }
+    };
+
+    // Function to parse LLM reservation response
+    function parseLLMResponse(response) {
+        // Attempt to extract JSON from the response
+        try {
+            // Ensure the response starts with a {
+            const jsonStart = response.indexOf('{');
+            if (jsonStart === -1) return null;
+            const jsonString = response.substring(jsonStart);
+            const data = JSON.parse(jsonString);
+            return {
+                partySize: data.partySize,
+                time: data.time,
+                seatingPreference: data.seatingPreference
+            };
+        } catch (error) {
+            // If not JSON, attempt to parse manually or return null
+            console.error('Failed to parse LLM response:', error);
+            return null;
+        }
+    }
+
+    // Function to parse LLM confirmation response
+    function parseLLMConfirmation(response) {
+        try {
+            const jsonStart = response.indexOf('{');
+            if (jsonStart === -1) return null;
+            const jsonString = response.substring(jsonStart);
+            const data = JSON.parse(jsonString);
+            return data;
+        } catch (error) {
+            console.error('Failed to parse LLM confirmation response:', error);
+            return null;
+        }
+    }
+
+    // Start Button Handler
+    document.getElementById('startButton').addEventListener('click', async () => {
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const model = document.getElementById('llmModel').value;
+
+        if (!apiKey) {
+            alert('Please enter your OpenAI API Key.');
+            return;
+        }
+
+        // Clear previous logs
+        document.getElementById('log').innerHTML = '';
+
+        // Start the reservation process
+        await Agent1.initiateReservation(apiKey, model);
+    });
+</script>
+
+</body>
+</html>

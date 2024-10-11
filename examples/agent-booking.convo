@@ -1,0 +1,85 @@
+Section: Agent 1 (User Agent)
+
+Set the user's name to "Steve".
+Set the user's party size to 2.
+Set the user's preferred time to "anytime after 7 PM".
+Set the user's seating preference to "least crowded".
+
+Display "Attempting to book a table for Steve."
+
+To contact the restaurant reservations agent:
+    Send the following message to the restaurant:
+        "I would like to book a table for 2 people after 7 PM in the least crowded area."
+
+Wait for the response from the reservations agent.
+
+
+Section: Agent 2 (Reservation Agent)
+
+To process the reservation request:
+    Set the request details to "[request received from Agent 1]".
+
+    Display "Processing reservation request."
+
+    Use the LLM to interpret the details of the reservation request.
+    Example request interpretation:
+        - Party size: 4
+        - Time: After 8 PM
+        - Seating preference: none
+
+    Search the restaurant's current bookings for available tables matching the request.
+
+    If a table is available, then:
+        Set available table time to the next available time (e.g., "7:30 PM").
+        Set table location to the least crowded section (e.g., "main dining").
+        
+        Log the reservation in the restaurant's system.
+        Send the following message to the user agent:
+            "Your reservation is confirmed for [available time] in [seating location]."
+
+    Otherwise:
+        Display "No available tables in the [preference] area."
+        Send the following message to the user agent:
+            "Sorry, no available tables [after/before] [requested time] that match your preferences."
+
+
+Section: Agent 1 (User Agent) Response Handling
+
+To handle the reservation response:
+    If the message contains "reservation is confirmed", then:
+        Display "Reservation confirmed for Steve at [available time] in [least crowded section]."
+
+    Otherwise if the message contains "no available tables", then:
+        Display "Unfortunately, no tables matching Steve's preferences are available."
+
+Section: LLM Support
+
+Use OpenAI for LLM support:
+    - Add a configuration setting for specifying the API key (hidden).
+    - Add a configuration setting for specifying the chat completion model: 
+        - chatgpt-4o-latest (default)
+        - o1-preview
+        - o1-mini
+
+Section: LLM Interpreter Loop
+
+For both Agent 1 and Agent 2, use the LLM to process each step of the Convo program dynamically:
+    - Call the LLM to interpret the next step of the program.
+    - Pass in the current state (conversation history, memory, or variables) for the LLM to work with.
+    - The LLM provides the next action or response based on the step it is interpreting.
+
+For Agent 1:
+    - Interpret each step of the Convo program until the request is fully constructed.
+    - Send the constructed request to Agent 2 as a message.
+    - Once a response is received, process it by interpreting each line using the LLM.
+
+For Agent 2:
+    - Interpret the incoming request by processing the message.
+    - Use the LLM to extract important details like party size, time, and seating preference.
+    - Check the restaurant's bookings dynamically (simulated here by calling an internal function or memory).
+    - Construct a response based on the availability of tables.
+    - Send the response back to Agent 1 in Convo format.
+
+In each case:
+    - The LLM interprets the step and updates variables or memory as needed.
+    - The LLM's conversation history holds the context needed to track ongoing operations.
