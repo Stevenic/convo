@@ -31,7 +31,7 @@ To process the reservation request:
 
     If a table is available, then:
         Set available table time to the next available time (e.g., "7:30 PM").
-        Set table location to the least crowded section (e.g., "main dining").
+        Set table location to the appropriate section (e.g., "main dining").
         
         Log the reservation in the restaurant's system.
         Send the following message to the user agent:
