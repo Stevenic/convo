@@ -1,0 +1,39 @@
+Application: Component Demo
+Create a page that shows a rich set of bootstrap inspired components.
+
+Define the main content area:
+    Add a header titled "Component Showcase".
+    Below the header, create a scrollable list layout to display various styled page elements and form inputs.
+
+    Add the following elements to the list. Add a title to each section:
+        - A section with an "h1" header, "h2" subheader, and a "p" paragraph to demonstrate text styling.
+        - A form with text input, email input, password input, a dropdown menu, checkboxes, and radio buttons.
+        - A section with primary and secondary buttons styled using bootstrap-inspired classes.
+        - An alert box styled as a success message.
+        - A progress bar showing 50% completion.
+        - A card with a title, text, and a footer with a link button.
+
+Set the sidebar title to "Components" and add a detailed description of what's being shown to the sidebar.
+ 
+Section: Layout
+Create a sidebar on the left side of the screen.
+Inside the sidebar, place a title aligned to the left and a toggle button aligned to the right.
+When the sidebar is closed, hide the title & sidebar contents, and dock the toggle button to the far left of the screen. Leave enough space for the sidebar to be re-opened.
+
+Create a main content area to the right of the sidebar.
+Make sure the main content area takes the remaining space on the screen.
+
+Section: Behavior
+To toggle the sidebar:
+    If the sidebar is open, then close it:
+        Hide the title.
+        Dock the toggle button to the far left of the screen, pointing right.
+    Otherwise, open the sidebar:
+        Show the title.
+        Move the toggle button to the right side of the sidebar, pointing left.
+
+Section: Style
+Apply a "light mode" theme that's inspired by bootstrap.
+Use a chevron for the sidebar toggle button.
+Style the form inputs, buttons, and other elements with padding, margins, and consistent font styles.
+Ensure hover and focus states are visually distinct for interactive elements.
