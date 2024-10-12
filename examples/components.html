@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: #f8f9fa;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar.closed {
+            width: 50px;
+        }
+        #sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        #sidebar-title {
+            font-weight: bold;
+        }
+        #toggle-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #sidebar-content {
+            padding: 15px;
+            overflow-y: auto;
+        }
+        #main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .progress {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #007bff;
+            width: 50%;
+        }
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .card-footer {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div id="sidebar-header">
+            <span id="sidebar-title">Components</span>
+            <button id="toggle-btn">&#9664;</button>
+        </div>
+        <div id="sidebar-content">
+            <p>This showcase demonstrates various Bootstrap-inspired components including headers, paragraphs, form inputs, buttons, alerts, progress bars, and cards.</p>
+        </div>
+    </div>
+    <div id="main-content">
+        <h1>Component Showcase</h1>
+        
+        <div class="section">
+            <h2>Text Styling</h2>
+            <h1>H1 Header</h1>
+            <h2>H2 Subheader</h2>
+            <p>This is a paragraph demonstrating text styling.</p>
+        </div>
+        
+        <div class="section">
+            <h2>Form Elements</h2>
+            <form>
+                <div class="form-group">
+                    <label for="text-input">Text Input:</label>
+                    <input type="text" id="text-input" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="email-input">Email Input:</label>
+                    <input type="email" id="email-input" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="password-input">Password Input:</label>
+                    <input type="password" id="password-input" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="dropdown">Dropdown:</label>
+                    <select id="dropdown" class="form-control">
+                        <option>Option 1</option>
+                        <option>Option 2</option>
+                        <option>Option 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Checkboxes:</label>
+                    <div>
+                        <input type="checkbox" id="checkbox1">
+                        <label for="checkbox1">Checkbox 1</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="checkbox2">
+                        <label for="checkbox2">Checkbox 2</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Radio Buttons:</label>
+                    <div>
+                        <input type="radio" name="radio" id="radio1">
+                        <label for="radio1">Radio 1</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="radio" id="radio2">
+                        <label for="radio2">Radio 2</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="section">
+            <h2>Buttons</h2>
+            <button class="btn btn-primary">Primary Button</button>
+            <button class="btn btn-secondary">Secondary Button</button>
+        </div>
+        
+        <div class="section">
+            <h2>Alert</h2>
+            <div class="alert alert-success">
+                This is a success message alert box.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Progress Bar</h2>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Card</h2>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Card Title</h5>
+                    <p class="card-text">This is some example text for the card body.</p>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const sidebarTitle = document.getElementById('sidebar-title');
+        const sidebarContent = document.getElementById('sidebar-content');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+            if (sidebar.classList.contains('closed')) {
+                toggleBtn.innerHTML = '&#9654;';
+                sidebarTitle.style.display = 'none';
+                sidebarContent.style.display = 'none';
+            } else {
+                toggleBtn.innerHTML = '&#9664;';
+                sidebarTitle.style.display = 'block';
+                sidebarContent.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
