@@ -45,12 +45,12 @@ When a TaskRequest is submitted:
 When a message is received from the AgentServer:
     - Append the message to the "Received Messages" list.
     - The message could be any of the following types: TaskResponse, HandoffNotification, ClarificationRequest, CallbackNotification, or ErrorMessage.
-    - Parse and display the relevant fields from the received message.
+    - Display the received message as a formatted JSON object.
 
 When a ClarificationRequest is received from the AgentServer:
     - Display the message as normal in the "Received Messages" list, but include an input field for composing the response.  
     - Include a "Send ClarificationResponse" button that will send the populated response to the AgentServer.
-      
+
 Section: Styles
 
 Apply a "light mode" theme with the following:

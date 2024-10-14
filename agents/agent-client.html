@@ -25,6 +25,7 @@
             border: 1px solid #dee2e6;
             padding: 10px;
             margin-bottom: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -59,7 +60,7 @@
                         <label for="callbackUrl" class="form-label">Callback URL (optional)</label>
                         <input type="text" class="form-control" id="callbackUrl">
                     </div>
-                    <button type="submit" class="btn btn-primary" id="sendTaskRequest">Send TaskRequest</button>
+                    <button type="submit" class="btn btn-primary" id="sendTaskRequestBtn">Send TaskRequest</button>
                 </form>
                 <hr>
                 <h4>Received Messages</h4>
@@ -84,99 +85,84 @@
         taskInput.value = localStorage.getItem('lastTask') || '';
         agentIdInput.value = localStorage.getItem('lastAgentId') || '';
 
-        function toggleConnection() {
+        function setConnected(isConnected) {
+            connectBtn.textContent = isConnected ? 'Disconnect' : 'Connect';
+            taskRequestForm.querySelectorAll('input, button').forEach(el => el.disabled = !isConnected);
+        }
+
+        connectBtn.addEventListener('click', () => {
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.close();
-                connectBtn.textContent = 'Connect';
-                disableForm(true);
             } else {
                 socket = new WebSocket(serverUrlInput.value);
                 socket.onopen = () => {
-                    connectBtn.textContent = 'Disconnect';
-                    disableForm(false);
+                    setConnected(true);
+                    console.log('Connected to server');
                 };
-                socket.onmessage = handleIncomingMessage;
                 socket.onclose = () => {
-                    connectBtn.textContent = 'Connect';
-                    disableForm(true);
+                    setConnected(false);
+                    console.log('Disconnected from server');
+                };
+                socket.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    displayReceivedMessage(message);
                 };
             }
-        }
+        });
 
-        function disableForm(disabled) {
-            const formElements = taskRequestForm.elements;
-            for (let i = 0; i < formElements.length; i++) {
-                formElements[i].disabled = disabled;
-            }
-        }
-
-        function handleIncomingMessage(event) {
-            const message = JSON.parse(event.data);
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'received-message';
-            
-            let content = `<strong>${message.type}</strong><br>`;
-            for (const [key, value] of Object.entries(message)) {
-                if (key !== 'type') {
-                    content += `${key}: ${value}<br>`;
-                }
-            }
-
-            if (message.type === 'ClarificationRequest') {
-                content += `
-                    <input type="text" class="form-control mt-2" placeholder="Enter your response">
-                    <button class="btn btn-primary mt-2" onclick="sendClarificationResponse('${message.task_ID}', this)">
-                        Send ClarificationResponse
-                    </button>
-                `;
-            }
-
-            messageDiv.innerHTML = content;
-            receivedMessagesDiv.prepend(messageDiv);
-        }
-
-        function sendClarificationResponse(taskId, button) {
-            const responseInput = button.previousElementSibling;
-            const response = {
-                type: 'ClarificationResponse',
-                task_ID: taskId,
-                answer: responseInput.value,
-                replying_agent_id: agentIdInput.value
-            };
-            socket.send(JSON.stringify(response));
-            responseInput.value = '';
-            button.disabled = true;
-        }
-
-        function sendTaskRequest(event) {
-            event.preventDefault();
-            const taskId = generateUniqueId();
-            const request = {
-                type: 'TaskRequest',
-                task_ID: taskId,
+        taskRequestForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const taskRequest = {
+                task_ID: generateUniqueId(),
                 task: taskInput.value,
                 requesting_agent_ID: agentIdInput.value,
-                callback_URL: callbackUrlInput.value
+                callback_URL: callbackUrlInput.value || undefined
             };
-            socket.send(JSON.stringify(request));
-            taskIdInput.value = taskId;
+            socket.send(JSON.stringify(taskRequest));
+            taskIdInput.value = taskRequest.task_ID;
+            console.log('TaskRequest sent:', taskRequest);
 
             // Save to local storage
             localStorage.setItem('lastTask', taskInput.value);
             localStorage.setItem('lastAgentId', agentIdInput.value);
+        });
 
-            alert('TaskRequest sent successfully!');
+        function displayReceivedMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('received-message');
+            messageDiv.innerHTML = `<pre>${JSON.stringify(message, null, 2)}</pre>`;
+
+            if (message.question) {
+                const responseForm = document.createElement('form');
+                responseForm.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label">Response:</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send ClarificationResponse</button>
+                `;
+                responseForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const clarificationResponse = {
+                        task_ID: message.task_ID,
+                        answer: e.target.querySelector('input').value,
+                        replying_agent_id: agentIdInput.value
+                    };
+                    socket.send(JSON.stringify(clarificationResponse));
+                    console.log('ClarificationResponse sent:', clarificationResponse);
+                });
+                messageDiv.appendChild(responseForm);
+            }
+
+            receivedMessagesDiv.prepend(messageDiv);
         }
 
         function generateUniqueId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
 
-        connectBtn.addEventListener('click', toggleConnection);
-        taskRequestForm.addEventListener('submit', sendTaskRequest);
-
-        // Initial form state
-        disableForm(true);
+        // Initial connection state
+        setConnected(false);
     </script>
 </body>
 </html>
