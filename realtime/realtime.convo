@@ -1,0 +1,54 @@
+Section: WebSocket Connection
+Connect to the WebSocket at "wss://api.openai.com/v1/assistants-streaming".
+
+Section: Session Management
+On connection,
+    Create a session with the model "gpt-4o-realtime-preview-2024-10-01".
+    Set the session modalities to ["text", "audio"].
+    Set the session voice to "alloy".
+    Enable input audio transcription using "whisper-1".
+    Set the input audio format to "pcm16".
+    Set the output audio format to "pcm16".
+    Set turn detection type to "server_vad" with threshold 0.5.
+    Set silence duration to 200 milliseconds.
+    Display "Session created successfully."
+
+Section: Input Handling
+On user text input,
+    Create a conversation item with the user input as text.
+    Send the conversation item to the server.
+    Display "User said: [user input]".
+
+On receiving audio input (Base64-encoded),
+    Append the audio bytes to the input audio buffer.
+    Commit the audio buffer to create a user message.
+    Display "Audio message sent to the server."
+
+Section: Response Handling
+On receiving a server response,
+    If the response type is "text",
+        Display "Assistant: [response text]".
+    If the response type is "audio",
+        Decode the audio from Base64 and play it.
+    If the response type is "function_call",
+        Display "Calling function [function name] with parameters: [function parameters]".
+    If the response type is "error",
+        Display "Error: [error message]".
+
+Section: Conversation Management
+On truncating a conversation item,
+    Send a truncate event for the conversation item with ID [item_id].
+    Display "Truncated item [item_id]".
+
+On deleting a conversation item,
+    Send a delete event for the conversation item with ID [item_id].
+    Display "Deleted item [item_id]".
+
+Section: Error Handling
+On receiving an error,
+    Display "Error occurred: [error message]".
+
+Section: Closing Connection
+When finished,
+    Close the WebSocket connection.
+    Display "Connection closed."
