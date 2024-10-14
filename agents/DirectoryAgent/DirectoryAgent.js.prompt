@@ -1,0 +1,10 @@
+
+Implement the DirectoryAgent module below for node.js. Use require not import.
+Only use classes for types with methods. When sending messages use JSON.
+Store agent registrations as files on disk in a directory called agents.
+Log incoming activities to console (be brief.)
+Start the DirectoryAgent instance.
+
+Import the { AgentServer } from ../AgentServer/AgentServer.js
+{{./DirectoryAgent.convo}}
+{{../AgentServer/AgentServer.convo}}

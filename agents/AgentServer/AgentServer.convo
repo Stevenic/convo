@@ -1,0 +1,82 @@
+Module: AgentServer
+
+Exports a class called "AgentServer" with:
+    Purpose: The AgentServer class manages the handling of incoming messages, task processing, and communication between agents and clients via WebSocket and HTTP transports. It serves as a framework to create agents that can process tasks, respond to clarifications, manage handoff notifications, and send responses to clients.
+    Inherit: Define new agent class to customize the processing of tasks. 
+    Methods:
+        - start: No parameters, returns nothing.
+            Purpose: Initializes the WebSocket and HTTP transports (POST to /message), starts them, and binds the incoming message handler.
+
+        - handleIncomingMessage: Takes a message (any type) and a transport (TransportInterface), returns nothing.
+            Purpose: Determines the type of the incoming message and dispatches it to the appropriate handler.
+
+        - sendResponse: Takes a response (TaskResponse, ClarificationResponse, or CallbackNotification) and a transport (TransportInterface), returns nothing.
+            Purpose: Sends the response back to the client using the specified transport.
+
+        - handleTaskRequest: Takes a TaskRequest object and a transport (TransportInterface), returns nothing.
+            Inherit: Override method to process incoming tasks. 
+            Purpose: Handles the processing of a TaskRequest message.
+
+        - handleHandoffNotification: Takes a HandoffNotification object and a transport (TransportInterface), returns nothing.
+            Inherit: Override to process a handoff notification.
+            Purpose: Handles the processing of a HandoffNotification message.
+
+        - handleCallbackNotification: Takes a CallbackNotification object and a transport (TransportInterface), returns nothing.
+            Inherit: Override to process a callback notification.
+            Purpose: Handles the processing of a CallbackNotification message.
+
+        - handleClarificationResponse: Takes a ClarificationResponse object and a transport (TransportInterface), returns nothing.
+            Inherit: Override to process clarification requests.
+            Purpose: Handles the processing of a ClarificationResponse message.
+
+Exports a type called "TaskRequest" with:
+    Properties:
+        - task_ID string
+        - task string
+        - requesting_agent_ID string
+        - callback_URL (optional) string
+
+Exports a type called "TaskResponse" with:
+    Properties:
+        - task_ID string
+        - result string
+        - status (success, failed, in-progress) string
+        - replying_agent_ID (the agent completing the task) string
+
+Exports a type called "HandoffNotification" with:
+    Properties:
+        - task_ID string
+        - current_agent_ID string
+        - new_agent_ID string
+        - reason_for_handoff string
+
+Exports a type called "ClarificationRequest" with:
+    Properties:
+        - task_ID string
+        - question string
+        - requesting_agent_id string
+
+Exports a type called "ClarificationResponse" with:
+    Properties:
+        - task_ID string
+        - answer string
+        - replying_agent_id string
+
+Exports a type called "CallbackNotification" with:
+    Properties:
+        - task_ID string
+        - result string
+        - status (complete, failed, in-progress) string
+        - requesting_agent_ID string
+        - replying_agent_ID (the agent completing the task) string
+
+Exports a type called "ErrorMessage" with:
+    Properties:
+        - task_ID (optional) string
+        - error_message string
+        - requesting_agent_ID string
+
+Exports a type called "TransportInterface" with:
+    Methods:
+        - sendResponse: Takes a response (any type), returns nothing.
+            Purpose: Sends a response message back through the transport to the connected client(s).

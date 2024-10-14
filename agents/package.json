@@ -1,0 +1,15 @@
+{
+  "name": "agents",
+  "version": "1.0.0",
+  "description": "A sample multi-agent framework written in convo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Steven Ickman",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "express": "^4.21.1",
+    "ws": "^8.18.0"
+  }
+}

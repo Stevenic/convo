@@ -1,0 +1,61 @@
+Application: Agent Client
+Define an application for testing a AgentServer over WebSockets.
+
+Section: Layout
+
+Create a sidebar on the left side of the screen.
+Inside the sidebar, place a title called "Agent Client" aligned to the left.
+
+Create a main content area to the right of the sidebar.
+Make sure the main content area takes the remaining space on the screen.
+
+In the sidebar area:
+    - Add a description saying "This app is used to send and receive messages to/from the AgentServer."
+    - Add a setting labeled "Server URL" for configuring the server URL. Default to "http://localhost:4242".
+    - Add a button labeled "Connect" for connecting to the server, and change the label to "Disconnect" when the server is connected.
+
+In the main content area:
+    - Add a form titled "New TaskRequest" for creating a new outgoing TaskRequest.
+    - The form should have the following fields:
+        - A non-editable field labeled "Task ID", which automatically populates with a unique ID. Default to say "(auto populated)"
+        - An editable field labeled "Task", where users can enter the task description.
+        - An editable field labeled "Requesting Agent ID", where users can input the agent ID.
+        - An optional editable field labeled "Callback URL", where users can input a callback URL (optional).
+        - A button labeled "Send TaskRequest".
+    - Under the TaskRequest form, add a "Received Messages" list where incoming messages from the AgentServer are displayed.
+    - Disable the main content area when not connected to the server.
+
+Section: Functionality
+
+On clicking the "Connect" button:
+    - If the current state is "Disconnected", connect to the server using WebSocket at the specified URL.
+    - If the current state is "Connected", close the WebSocket connection and change the state to "Disconnected".
+
+On successful connection:
+    - Enable the TaskRequest form and allow users to send new TaskRequests.
+
+On disconnection:
+    - Disable the TaskRequest form.
+
+When a TaskRequest is submitted:
+    - Generate a unique Task ID and populate the "Task ID" field.
+    - Collect the input values from the form (Task, Requesting Agent ID, Callback URL) and send the TaskRequest to the AgentServer via WebSocket.
+    - Display a message confirming the TaskRequest has been sent.
+
+When a message is received from the AgentServer:
+    - Append the message to the "Received Messages" list.
+    - The message could be any of the following types: TaskResponse, HandoffNotification, ClarificationRequest, CallbackNotification, or ErrorMessage.
+    - Parse and display the relevant fields from the received message.
+
+When a ClarificationRequest is received from the AgentServer:
+    - Display the message as normal in the "Received Messages" list, but include an input field for composing the response.  
+    - Include a "Send ClarificationResponse" button that will send the populated response to the AgentServer.
+      
+Section: Styles
+
+Apply a "light mode" theme with the following:
+    - Use a light background for the entire app, similar to Bootstrap's "bg-light".
+    - For the sidebar, use a slightly darker shade for the background (Bootstrap's "bg-secondary") with white text.
+    - The main content area should have a clean, white background (Bootstrap's "bg-white") with subtle borders for forms and list items.
+    - Use blue buttons (Bootstrap's "btn-primary") for actions like "Connect" and "Send TaskRequest".
+    - The received messages list should have minimal padding and spacing with each message in a bordered box.

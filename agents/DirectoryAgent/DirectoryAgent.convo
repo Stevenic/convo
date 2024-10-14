@@ -1,0 +1,78 @@
+Module: DirectoryAgent
+
+Define a class called "DirectoryAgent" that extends "AgentServer".
+
+Purpose: 
+    - The DirectoryAgent is a specialized agent that processes two types of tasks: 
+        1. Agent Registration
+        2. Agent Lookup
+    
+Inherits: 
+    - AgentServer
+
+Properties:
+    - registered_agents (list of dictionaries):
+        - agent ID string
+        - capabilities list
+        - address string
+        - status string
+
+Methods:
+    
+    - constructor: No parameters, returns nothing.
+        Purpose: Initializes the registered_agents list and invokes the parent class constructor.
+        Steps:
+            - Initialize "registered_agents" as an empty list.
+            - Call the parent class constructor.
+            - Display "Directory Agent initialized."
+
+    - handleTaskRequest: Takes a TaskRequest object and a transport (TransportInterface), returns nothing.
+        Purpose: Overrides the base method to process agent registration and lookup tasks.
+        Steps:
+            - Extract the task description from the TaskRequest.
+            - If the task description includes "register me as an agent", call "registerAgent".
+            - If the task description includes "find an agent", call "lookupAgent".
+            - Otherwise, send an TaskResponse back with a status "failed" and a message saying "Task not supported."
+
+    - registerAgent: Takes a TaskRequest object and a transport (TransportInterface), returns nothing.
+        Purpose: Handles the agent registration task.
+        Steps:
+            - Extract the agent ID, capabilities, address, and status from the TaskRequest.
+            - If the agent ID is already registered, send an ErrorMessage.
+            - Otherwise:
+                - Add the agent's details to the registered_agents list.
+                - Display "Agent [agent ID] registered successfully."
+                - Send a TaskResponse back with status "success" and the registration details.
+
+    - lookupAgent: Takes a TaskRequest object and a transport (TransportInterface), returns nothing.
+        Purpose: Handles the agent lookup task.
+        Steps:
+            - Extract the requested capabilities from the TaskRequest.
+            - Search through the registered_agents list for agents with the requested capabilities who are "available".
+            - If one or more matching agents are found:
+                - Send a TaskResponse back with status "success" and the list of available agents.
+            - Otherwise, send a TaskResponse with status "failed" and a message saying "No available agents found."
+
+Examples:
+
+Example 1: Agent Registration
+
+TaskRequest:
+task_ID: "reg1"
+task: "register me as an agent with ID agentA, capabilities 'data processing', address 'http://agentA.com', and status 'available'"
+requesting_agent_ID: "agentA"
+
+Expected result:
+    - The agent with ID agentA is added to the registered_agents list.
+    - TaskResponse with status "success" is sent back.
+
+Example 2: Agent Lookup
+
+TaskRequest:
+task_ID: "lookup1"
+task: "find an agent that can perform data processing"
+requesting_agent_ID: "clientA"
+
+Expected result:
+    - If there are agents with the requested capability, return their details in a TaskResponse.
+    - If none are found, return a TaskResponse with status "failed" and an appropriate error message.
