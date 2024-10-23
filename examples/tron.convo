@@ -1,0 +1,56 @@
+Section: Tron Light Cycle Game with AI Strategies
+
+Start the game.
+Display "Welcome to Tron Light Cycle Game!"
+Display "You control the Light Cycle with the arrow keys."
+Display "Your goal is to outlast the AI cycles. Avoid crashing!"
+Ask the user "How many AI cycles would you like to compete against?"
+
+Set the player's Light Cycle at position (1, 1), color blue.
+
+Let the number of AI cycles be the user's input.
+Create a list called "AI Cycles".
+
+For each AI cycle from 1 to the number of AI cycles:
+    Create a Light Cycle with a random starting position and random color.
+    Assign a random strategy (Trail Chaser, Wall Hugger, or Open Space Seeker).
+    Add the AI cycle to the list of AI Cycles.
+
+While the player's Light Cycle is alive and at least one AI cycle is alive:
+    For the player's Light Cycle:
+        Ask for direction (up, down, left, or right).
+        Move the player's Light Cycle in the chosen direction.
+        If the player crashes into the wall or a trail, then
+            Set the player's Light Cycle to "crashed".
+            Display "You crashed! Game Over."
+
+    For each AI cycle in the list:
+        If the AI cycle has a "Trail Chaser" strategy, then
+            Move the AI cycle towards the player's current position.
+            Check if the AI's next move would cause a crash.
+            If a crash is likely, adjust direction to avoid it.
+        Else if the AI cycle has a "Wall Hugger" strategy, then
+            Move the AI cycle along the edge of the arena.
+            If near the center, adjust movement towards the wall.
+        Else if the AI cycle has an "Open Space Seeker" strategy, then
+            Move the AI cycle towards the area with the least number of trails.
+            Check the surroundings to find the most open space.
+        
+        If the AI cycle crashes into a wall or trail, then
+            Set the AI cycle to "crashed".
+            Remove the AI cycle from the list of active AI cycles.
+            Display "An AI cycle has crashed!"
+
+If the player is alive and all AI cycles have crashed, then
+    Display "Congratulations, you won!"
+Else if the player has crashed, then
+    Display "Game Over. You lost."
+
+Ask "Play again? (yes/no)"
+If the answer is "yes", then restart the game.
+Otherwise, end the game.
+
+Section: Styles
+Define a style called "Arena" with grid size 50x50, background color black.
+Define a style for the player's Light Cycle with color blue, trail width 3 pixels.
+Define a style for AI cycles with random colors, trail width 3 pixels.

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tron Light Cycle Game</title>
+    <style>
+        #gameCanvas {
+            border: 1px solid white;
+            background: black;
+        }
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #gameControls {
+            margin: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #status {
+            margin: 10px;
+            font-size: 1.2em;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tron Light Cycle Game</h1>
+    <div id="gameControls">
+        <input type="number" id="aiCount" min="1" max="5" value="2">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div id="status"></div>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const GRID_SIZE = 50;
+const CELL_SIZE = canvas.width / GRID_SIZE;
+
+let player;
+let aiCycles = [];
+let grid;
+let gameLoop;
+let gameRunning = false;
+
+class LightCycle {
+    constructor(x, y, color, strategy) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.direction = { x: 1, y: 0 };
+        this.trail = [[x, y]];
+        this.crashed = false;
+        this.strategy = strategy;
+    }
+
+    move() {
+        this.x += this.direction.x;
+        this.y += this.direction.y;
+        
+        if (this.checkCollision()) {
+            this.crashed = true;
+            return false;
+        }
+        
+        this.trail.push([this.x, this.y]);
+        grid[this.y][this.x] = 1;
+        return true;
+    }
+
+    checkCollision() {
+        return this.x < 0 || this.x >= GRID_SIZE || 
+               this.y < 0 || this.y >= GRID_SIZE || 
+               grid[this.y][this.x] === 1;
+    }
+
+    draw() {
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(this.trail[0][0] * CELL_SIZE, this.trail[0][1] * CELL_SIZE);
+        for (let pos of this.trail) {
+            ctx.lineTo(pos[0] * CELL_SIZE, pos[1] * CELL_SIZE);
+        }
+        ctx.stroke();
+    }
+}
+
+function initGrid() {
+    grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(0));
+}
+
+function startGame() {
+    if (gameRunning) return;
+    
+    initGrid();
+    const aiCount = parseInt(document.getElementById('aiCount').value);
+    
+    player = new LightCycle(1, 1, '#00f', 'player');
+    aiCycles = [];
+    
+    for (let i = 0; i < aiCount; i++) {
+        const x = Math.floor(Math.random() * (GRID_SIZE - 10)) + 5;
+        const y = Math.floor(Math.random() * (GRID_SIZE - 10)) + 5;
+        const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        const strategies = ['TrailChaser', 'WallHugger', 'OpenSpaceSeeker'];
+        const strategy = strategies[Math.floor(Math.random() * strategies.length)];
+        aiCycles.push(new LightCycle(x, y, color, strategy));
+    }
+
+    gameRunning = true;
+    document.getElementById('status').textContent = 'Game Started! Use arrow keys to move.';
+    gameLoop = setInterval(update, 100);
+}
+
+function update() {
+    if (!gameRunning) return;
+
+    // Player movement
+    if (!player.crashed && !player.move()) {
+        gameOver('You crashed! Game Over.');
+        return;
+    }
+
+    // AI movement
+    for (let ai of aiCycles) {
+        if (ai.crashed) continue;
+        
+        // Implement AI strategy
+        switch(ai.strategy) {
+            case 'TrailChaser':
+                chasePlayer(ai);
+                break;
+            case 'WallHugger':
+                hugWall(ai);
+                break;
+            case 'OpenSpaceSeeker':
+                seekOpenSpace(ai);
+                break;
+        }
+
+        if (!ai.move()) {
+            ai.crashed = true;
+            document.getElementById('status').textContent = 'An AI cycle has crashed!';
+        }
+    }
+
+    // Check win condition
+    if (aiCycles.every(ai => ai.crashed)) {
+        gameOver('Congratulations, you won!');
+        return;
+    }
+
+    draw();
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    player.draw();
+    aiCycles.forEach(ai => ai.draw());
+}
+
+function gameOver(message) {
+    gameRunning = false;
+    clearInterval(gameLoop);
+    document.getElementById('status').textContent = message;
+}
+
+// AI Strategies
+function chasePlayer(ai) {
+    const dx = player.x - ai.x;
+    const dy = player.y - ai.y;
+    if (Math.abs(dx) > Math.abs(dy)) {
+        ai.direction = { x: Math.sign(dx), y: 0 };
+    } else {
+        ai.direction = { x: 0, y: Math.sign(dy) };
+    }
+}
+
+function hugWall(ai) {
+    if (ai.x < 2) ai.direction = { x: 0, y: 1 };
+    else if (ai.x > GRID_SIZE - 3) ai.direction = { x: 0, y: -1 };
+    else if (ai.y < 2) ai.direction = { x: 1, y: 0 };
+    else if (ai.y > GRID_SIZE - 3) ai.direction = { x: -1, y: 0 };
+}
+
+function seekOpenSpace(ai) {
+    const directions = [
+        { x: 1, y: 0 }, { x: -1, y: 0 },
+        { x: 0, y: 1 }, { x: 0, y: -1 }
+    ];
+    
+    let bestDirection = ai.direction;
+    let maxSpace = -1;
+
+    for (let dir of directions) {
+        const newX = ai.x + dir.x;
+        const newY = ai.y + dir.y;
+        if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE && grid[newY][newX] === 0) {
+            const space = countOpenSpace(newX, newY, 3);
+            if (space > maxSpace) {
+                maxSpace = space;
+                bestDirection = dir;
+            }
+        }
+    }
+    
+    ai.direction = bestDirection;
+}
+
+function countOpenSpace(x, y, depth) {
+    if (depth === 0) return 0;
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE || grid[y][x] === 1) return 0;
+    return 1 + countOpenSpace(x + 1, y, depth - 1) +
+             countOpenSpace(x - 1, y, depth - 1) +
+             countOpenSpace(x, y + 1, depth - 1) +
+             countOpenSpace(x, y - 1, depth - 1);
+}
+
+// Handle keyboard input
+document.addEventListener('keydown', (e) => {
+    if (!gameRunning) return;
+    
+    switch(e.key) {
+        case 'ArrowUp':
+            if (player.direction.y !== 1) player.direction = { x: 0, y: -1 };
+            break;
+        case 'ArrowDown':
+            if (player.direction.y !== -1) player.direction = { x: 0, y: 1 };
+            break;
+        case 'ArrowLeft':
+            if (player.direction.x !== 1) player.direction = { x: -1, y: 0 };
+            break;
+        case 'ArrowRight':
+            if (player.direction.x !== -1) player.direction = { x: 1, y: 0 };
+            break;
+    }
+});
+</script>
+</body>
+</html>

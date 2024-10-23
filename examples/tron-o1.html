@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tron Light Cycle Game</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #gameContainer {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #arena {
+            background-color: black;
+            border: 2px solid #fff;
+        }
+        #messages {
+            margin: 20px;
+        }
+        .cycleTrail {
+            width: 3px;
+            height: 3px;
+            position: absolute;
+            border-radius: 50%;
+        }
+        #startScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #startScreen input {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        #startScreen button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="startScreen">
+    <h1>Welcome to Tron Light Cycle Game!</h1>
+    <p>You control the Light Cycle with the arrow keys.</p>
+    <p>Your goal is to outlast the AI cycles. Avoid crashing!</p>
+    <label for="aiCount">How many AI cycles would you like to compete against?</label>
+    <input type="number" id="aiCount" min="1" max="10" value="3">
+    <button id="startButton">Start Game</button>
+</div>
+
+<div id="gameContainer">
+    <canvas id="arena" width="500" height="500"></canvas>
+    <div id="messages"></div>
+</div>
+
+<script>
+    const canvas = document.getElementById('arena');
+    const ctx = canvas.getContext('2d');
+    const messagesDiv = document.getElementById('messages');
+    const startScreen = document.getElementById('startScreen');
+    const gameContainer = document.getElementById('gameContainer');
+    const startButton = document.getElementById('startButton');
+    const aiCountInput = document.getElementById('aiCount');
+
+    const GRID_SIZE = 50;
+    const CELL_SIZE = canvas.width / GRID_SIZE;
+    const DIRECTIONS = {
+        'ArrowUp': {dx: 0, dy: -1},
+        'ArrowDown': {dx: 0, dy: 1},
+        'ArrowLeft': {dx: -1, dy: 0},
+        'ArrowRight': {dx: 1, dy: 0}
+    };
+
+    let arena = [];
+    let player;
+    let aiCycles = [];
+    let gameInterval;
+    let gameOver = false;
+
+    // Initialize arena grid
+    function initArena() {
+        arena = [];
+        for (let x = 0; x < GRID_SIZE; x++) {
+            arena[x] = [];
+            for (let y = 0; y < GRID_SIZE; y++) {
+                arena[x][y] = null;
+            }
+        }
+    }
+
+    // Cycle class
+    class Cycle {
+        constructor(x, y, color, isPlayer=false, strategy=null) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.isPlayer = isPlayer;
+            this.direction = {dx: 1, dy: 0}; // Default direction: right
+            this.alive = true;
+            this.strategy = strategy; // For AI cycles
+        }
+
+        setDirection(newDir) {
+            // Prevent reversing direction
+            if (this.direction.dx + newDir.dx === 0 && this.direction.dy + newDir.dy === 0) {
+                return;
+            }
+            this.direction = newDir;
+        }
+
+        move() {
+            this.x += this.direction.dx;
+            this.y += this.direction.dy;
+        }
+
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x * CELL_SIZE, this.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        }
+    }
+
+    // Utility functions
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[getRandomInt(0, 16)];
+        }
+        return color;
+    }
+
+    function getRandomStrategy() {
+        const strategies = ['Trail Chaser', 'Wall Hugger', 'Open Space Seeker'];
+        return strategies[getRandomInt(0, strategies.length)];
+    }
+
+    function isValidPosition(x, y) {
+        return x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE && arena[x][y] === null;
+    }
+
+    function addTrail(x, y, color) {
+        arena[x][y] = color;
+    }
+
+    function renderArena() {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Draw trails
+        for (let x = 0; x < GRID_SIZE; x++) {
+            for (let y = 0; y < GRID_SIZE; y++) {
+                if (arena[x][y]) {
+                    ctx.fillStyle = arena[x][y];
+                    ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                }
+            }
+        }
+        // Draw cycles
+        if (player.alive) player.draw();
+        aiCycles.forEach(ai => {
+            if (ai.alive) ai.draw();
+        });
+    }
+
+    // AI Strategies
+    function aiMove(ai) {
+        if (!ai.alive) return;
+
+        switch(ai.strategy) {
+            case 'Trail Chaser':
+                trailChaserStrategy(ai);
+                break;
+            case 'Wall Hugger':
+                wallHuggerStrategy(ai);
+                break;
+            case 'Open Space Seeker':
+                openSpaceSeekerStrategy(ai);
+                break;
+            default:
+                // Default to random direction
+                randomStrategy(ai);
+        }
+    }
+
+    function trailChaserStrategy(ai) {
+        const dx = player.x - ai.x;
+        const dy = player.y - ai.y;
+        let newDir = {dx: 0, dy: 0};
+        if (Math.abs(dx) > Math.abs(dy)) {
+            newDir.dx = dx > 0 ? 1 : -1;
+        } else {
+            newDir.dy = dy > 0 ? 1 : -1;
+        }
+
+        // Check if the new direction is valid
+        if (isValidPosition(ai.x + newDir.dx, ai.y + newDir.dy)) {
+            ai.setDirection(newDir);
+        } else {
+            // Try to avoid crash by turning
+            avoidCrash(ai);
+        }
+    }
+
+    function wallHuggerStrategy(ai) {
+        // Determine direction to follow the wall
+        // Simple implementation: keep moving in current direction unless near wall
+        const buffer = 2;
+        if (ai.x <= buffer && ai.direction.dx === -1) {
+            ai.setDirection({dx: 0, dy: 1}); // Turn down
+        } else if (ai.x >= GRID_SIZE - buffer && ai.direction.dx === 1) {
+            ai.setDirection({dx: 0, dy: -1}); // Turn up
+        }
+        if (ai.y <= buffer && ai.direction.dy === -1) {
+            ai.setDirection({dx: 1, dy: 0}); // Turn right
+        } else if (ai.y >= GRID_SIZE - buffer && ai.direction.dy === 1) {
+            ai.setDirection({dx: -1, dy: 0}); // Turn left
+        }
+
+        // Check if the new direction is valid
+        if (!isValidPosition(ai.x + ai.direction.dx, ai.y + ai.direction.dy)) {
+            avoidCrash(ai);
+        }
+    }
+
+    function openSpaceSeekerStrategy(ai) {
+        // Find the direction with the most open space
+        const directions = [
+            {dx: 0, dy: -1}, // Up
+            {dx: 0, dy: 1},  // Down
+            {dx: -1, dy: 0}, // Left
+            {dx: 1, dy: 0}    // Right
+        ];
+        let maxSpace = -1;
+        let bestDir = ai.direction;
+
+        directions.forEach(dir => {
+            const nx = ai.x + dir.dx;
+            const ny = ai.y + dir.dy;
+            if (isValidPosition(nx, ny)) {
+                const space = floodFill(nx, ny, []);
+                if (space > maxSpace) {
+                    maxSpace = space;
+                    bestDir = dir;
+                }
+            }
+        });
+
+        ai.setDirection(bestDir);
+    }
+
+    function randomStrategy(ai) {
+        const directions = [
+            {dx: 0, dy: -1}, // Up
+            {dx: 0, dy: 1},  // Down
+            {dx: -1, dy: 0}, // Left
+            {dx: 1, dy: 0}    // Right
+        ];
+        const validDirs = directions.filter(dir => isValidPosition(ai.x + dir.dx, ai.y + dir.dy));
+        if (validDirs.length > 0) {
+            const chosenDir = validDirs[getRandomInt(0, validDirs.length)];
+            ai.setDirection(chosenDir);
+        }
+    }
+
+    function avoidCrash(ai) {
+        // Try turning left or right
+        const left = {dx: -ai.direction.dy, dy: ai.direction.dx};
+        const right = {dx: ai.direction.dy, dy: -ai.direction.dx};
+
+        if (isValidPosition(ai.x + left.dx, ai.y + left.dy)) {
+            ai.setDirection(left);
+        } else if (isValidPosition(ai.x + right.dx, ai.y + right.dy)) {
+            ai.setDirection(right);
+        } else {
+            // No valid direction, keep moving forward and crash
+        }
+    }
+
+    function floodFill(x, y, visited) {
+        if (!isValidPosition(x, y) || visited.some(pos => pos.x === x && pos.y === y)) {
+            return 0;
+        }
+        visited.push({x, y});
+        let count = 1;
+        const directions = [
+            {dx: 0, dy: -1},
+            {dx: 0, dy: 1},
+            {dx: -1, dy: 0},
+            {dx: 1, dy: 0}
+        ];
+        directions.forEach(dir => {
+            count += floodFill(x + dir.dx, y + dir.dy, visited);
+        });
+        return count;
+    }
+
+    // Initialize game
+    function initGame(aiCount) {
+        initArena();
+        aiCycles = [];
+        gameOver = false;
+        messagesDiv.innerHTML = "";
+
+        // Initialize player
+        player = new Cycle(1, 1, 'blue', true);
+        addTrail(player.x, player.y, player.color);
+
+        // Initialize AI cycles
+        for (let i = 0; i < aiCount; i++) {
+            let ai;
+            let attempts = 0;
+            do {
+                const x = getRandomInt(0, GRID_SIZE);
+                const y = getRandomInt(0, GRID_SIZE);
+                if (isValidPosition(x, y) && !(x === player.x && y === player.y)) {
+                    const color = getRandomColor();
+                    const strategy = getRandomStrategy();
+                    ai = new Cycle(x, y, color, false, strategy);
+                    addTrail(ai.x, ai.y, ai.color);
+                    aiCycles.push(ai);
+                    break;
+                }
+                attempts++;
+            } while (attempts < 100);
+        }
+
+        renderArena();
+    }
+
+    // Handle player input
+    let pendingDirection = null;
+    window.addEventListener('keydown', (e) => {
+        if (DIRECTIONS[e.key]) {
+            pendingDirection = DIRECTIONS[e.key];
+        }
+    });
+
+    // Game loop
+    function gameLoop() {
+        if (gameOver) return;
+
+        // Update player direction
+        if (pendingDirection) {
+            player.setDirection(pendingDirection);
+            pendingDirection = null;
+        }
+
+        // Move player
+        player.move();
+
+        // Check collisions for player
+        if (!isValidPosition(player.x, player.y)) {
+            player.alive = false;
+            messagesDiv.innerHTML += "<p>You crashed! Game Over.</p>";
+            endGame();
+            return;
+        }
+        addTrail(player.x, player.y, player.color);
+
+        // Move AI cycles
+        aiCycles.forEach(ai => {
+            if (ai.alive) {
+                aiMove(ai);
+                ai.move();
+
+                // Check collisions for AI
+                if (!isValidPosition(ai.x, ai.y)) {
+                    ai.alive = false;
+                    messagesDiv.innerHTML += "<p>An AI cycle has crashed!</p>";
+                } else {
+                    addTrail(ai.x, ai.y, ai.color);
+                }
+            }
+        });
+
+        // Remove crashed AIs
+        aiCycles = aiCycles.filter(ai => ai.alive);
+
+        // Render arena
+        renderArena();
+
+        // Check game over conditions
+        if (!player.alive) {
+            messagesDiv.innerHTML += "<p>Game Over. You lost.</p>";
+            endGame();
+            return;
+        }
+
+        if (aiCycles.length === 0) {
+            messagesDiv.innerHTML += "<p>Congratulations, you won!</p>";
+            endGame();
+            return;
+        }
+    }
+
+    function endGame() {
+        clearInterval(gameInterval);
+        gameOver = true;
+        setTimeout(() => {
+            const playAgain = confirm("Play again?");
+            if (playAgain) {
+                startScreen.style.display = 'flex';
+                gameContainer.style.display = 'none';
+            }
+        }, 100);
+    }
+
+    // Start button handler
+    startButton.addEventListener('click', () => {
+        const aiCount = parseInt(aiCountInput.value);
+        if (isNaN(aiCount) || aiCount < 1 || aiCount > 10) {
+            alert("Please enter a valid number of AI cycles (1-10).");
+            return;
+        }
+        startScreen.style.display = 'none';
+        gameContainer.style.display = 'flex';
+        initGame(aiCount);
+        gameInterval = setInterval(gameLoop, 200); // Adjust speed as needed
+    });
+</script>
+
+</body>
+</html>

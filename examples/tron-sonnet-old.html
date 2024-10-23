@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tron Light Cycle Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #222;
+            color: #fff;
+        }
+        #arena {
+            width: 400px;
+            height: 400px;
+            background-color: black;
+            position: relative;
+            border: 1px solid #fff;
+        }
+        .cycle {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .trail {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tron Light Cycle Game</h1>
+    <div id="messages"></div>
+    <div id="arena"></div>
+    <button id="startButton">Start Game</button>
+
+    <script>
+        const arena = document.getElementById('arena');
+        const messages = document.getElementById('messages');
+        const startButton = document.getElementById('startButton');
+
+        let player;
+        let aiCycles = [];
+        let gameLoop;
+        let gridSize = 40;
+
+        function showMessage(msg) {
+            messages.innerHTML += msg + '<br>';
+        }
+
+        function clearMessages() {
+            messages.innerHTML = '';
+        }
+
+        function createCycle(x, y, color) {
+            return {
+                x: x,
+                y: y,
+                color: color,
+                direction: 'right',
+                crashed: false,
+                element: document.createElement('div'),
+                trail: []
+            };
+        }
+
+        function drawCycle(cycle) {
+            cycle.element.style.left = (cycle.x * 10) + 'px';
+            cycle.element.style.top = (cycle.y * 10) + 'px';
+            cycle.element.style.backgroundColor = cycle.color;
+            cycle.element.className = 'cycle';
+            arena.appendChild(cycle.element);
+        }
+
+        function drawTrail(cycle) {
+            let trail = document.createElement('div');
+            trail.style.left = (cycle.x * 10) + 'px';
+            trail.style.top = (cycle.y * 10) + 'px';
+            trail.style.backgroundColor = cycle.color;
+            trail.className = 'trail';
+            arena.appendChild(trail);
+            cycle.trail.push({x: cycle.x, y: cycle.y});
+        }
+
+        function moveCycle(cycle) {
+            switch(cycle.direction) {
+                case 'up': cycle.y--; break;
+                case 'down': cycle.y++; break;
+                case 'left': cycle.x--; break;
+                case 'right': cycle.x++; break;
+            }
+        }
+
+        function checkCollision(cycle) {
+            if (cycle.x < 0 || cycle.x >= gridSize || cycle.y < 0 || cycle.y >= gridSize) {
+                return true;
+            }
+            for (let c of [player, ...aiCycles]) {
+                for (let t of c.trail) {
+                    if (cycle.x === t.x && cycle.y === t.y) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function aiMove(cycle) {
+            let directions = ['up', 'down', 'left', 'right'];
+            let validDirections = directions.filter(d => {
+                let testCycle = {...cycle};
+                testCycle.direction = d;
+                moveCycle(testCycle);
+                return !checkCollision(testCycle);
+            });
+            if (validDirections.length > 0) {
+                cycle.direction = validDirections[Math.floor(Math.random() * validDirections.length)];
+            }
+        }
+
+        function update() {
+            moveCycle(player);
+            if (checkCollision(player)) {
+                player.crashed = true;
+                showMessage("You crashed! Game Over.");
+                endGame();
+                return;
+            }
+            drawTrail(player);
+            drawCycle(player);
+
+            for (let cycle of aiCycles) {
+                if (!cycle.crashed) {
+                    aiMove(cycle);
+                    moveCycle(cycle);
+                    if (checkCollision(cycle)) {
+                        cycle.crashed = true;
+                        showMessage("An AI cycle has crashed!");
+                    } else {
+                        drawTrail(cycle);
+                        drawCycle(cycle);
+                    }
+                }
+            }
+
+            aiCycles = aiCycles.filter(c => !c.crashed);
+
+            if (aiCycles.length === 0) {
+                showMessage("Congratulations, you won!");
+                endGame();
+            }
+        }
+
+        function endGame() {
+            clearInterval(gameLoop);
+            startButton.style.display = 'block';
+        }
+
+        function startGame() {
+            clearMessages();
+            arena.innerHTML = '';
+            showMessage("Welcome to Tron Light Cycle Game!");
+            showMessage("You control the Light Cycle with the arrow keys.");
+            showMessage("Your goal is to outlast the AI cycles. Avoid crashing!");
+
+            let aiCount = parseInt(prompt("How many AI cycles would you like to compete against?", "3"));
+
+            player = createCycle(1, 1, 'blue');
+            aiCycles = [];
+
+            for (let i = 0; i < aiCount; i++) {
+                let x = Math.floor(Math.random() * gridSize);
+                let y = Math.floor(Math.random() * gridSize);
+                let color = `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
+                aiCycles.push(createCycle(x, y, color));
+            }
+
+            drawCycle(player);
+            aiCycles.forEach(drawCycle);
+
+            startButton.style.display = 'none';
+
+            gameLoop = setInterval(update, 100);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp': player.direction = 'up'; break;
+                case 'ArrowDown': player.direction = 'down'; break;
+                case 'ArrowLeft': player.direction = 'left'; break;
+                case 'ArrowRight': player.direction = 'right'; break;
+            }
+        });
+
+        startButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
