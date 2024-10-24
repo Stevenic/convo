@@ -1,0 +1,38 @@
+{
+    "name": "fauxberry-cli",
+    "version": "0.1.0",
+    "description": "A CLI application implementing the fauxberry thinking loop for Anthropic's Claude family of models",
+    "main": "fauxberry.js",
+    "bin": {
+      "fauxberry-cli": "./fauxberry.js"
+    },
+    "scripts": {
+      "start": "node fauxberry.js",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+      "cli",
+      "anthropic",
+      "claude",
+      "ai",
+      "fauxberry"
+    ],
+    "author": "Steven Ickman",
+    "license": "MIT",
+    "dependencies": {
+      "axios": "^1.7.7",
+      "dotenv": "^16.4.5",
+      "yargs": "^17.7.2"
+    },
+    "engines": {
+      "node": ">=14.0.0"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Stevenic/convo.git"
+    },
+    "bugs": {
+      "url": "https://github.com/Stevenic/convo/issues"
+    },
+    "homepage": "https://github.com/Stevenic/convo#readme"
+  }

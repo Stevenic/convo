@@ -1,0 +1,62 @@
+Section: Fauxberry Request to Claude 3.5
+
+# 1. Initialize variables
+Let the task be set to "Explain how quantum entanglement works."
+Let conversation history be an empty list.
+Let api_key be "your_anthropic_api_key".
+
+# 2. Define a function to send a message to Claude via the API
+To send message to Claude with model "claude-3-5-sonnet-20241022", using message content:
+    Make an HTTP POST request to "https://api.anthropic.com/v1/messages".
+    Set headers to:
+        x-api-key as api_key,
+        anthropic-version as "2023-06-01",
+        content-type as "application/json".
+    
+    Set the body of the request to:
+    ```
+    {
+        "model": "claude-3-5-sonnet-20241022",
+        "max_tokens": 8182,
+        "system": "<TASK>\n${task}\n\n<INSTRUCTIONS>\nSlow down your thinking by breaking complex questions into multiple reasoning steps.\nEach individual reasoning step should be brief.\nReturn <DONE> after the last step.",
+        "messages": [
+            {"role": "user", "content": "Think about your next reasoning step to perform the TASK. Return just the next step."},
+            ... reasoning steps
+        ]
+    }
+    ```
+
+    Return the response from Claude.
+
+# 3. Define Fauxberry thinking loop
+To start thinking loop for the task:
+    Let continue_loop be true.
+    
+    While continue_loop is true:
+        # 4. Add the message asking for the next reasoning step
+        Add "Think about your next reasoning step to perform the TASK. Return just the next step." to conversation history.
+
+        # 5. Send the current message to Claude
+        Let response be the result of calling "send message to Claude" with the last item in conversation history.
+        
+        # 6. Add the response to the conversation history
+        Add response to conversation history.
+        
+        # 7. Check if Claude has finished reasoning (looks for <DONE> tag)
+        If the response contains "<DONE>":
+            Set continue_loop to false.
+
+# 8. Final task completion request
+To complete the task:
+    # 9. After the <DONE> tag is detected, request the final output
+    Add "Complete the <TASK>. Do not return <DONE>." to conversation history.
+    
+    # 10. Send the request to Claude for the final output
+    Let final_response be the result of calling "send message to Claude" with the last item in conversation history.
+    
+    # 11. Display the final response
+    Display final_response.
+
+# 12. Start the Fauxberry thinking loop and complete the task
+Start thinking loop for the task.
+Complete the task.
